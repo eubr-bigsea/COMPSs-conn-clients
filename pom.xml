@@ -169,5 +169,6 @@
 		<module>jclouds-client</module>
 		<module>mesos-framework-client</module>
 		<module>rocci-client</module>
+		<module>vmm-client</module>
 	</modules>
 </project>

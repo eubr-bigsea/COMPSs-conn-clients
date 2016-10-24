@@ -17,6 +17,7 @@ public class Loggers {
     public static final String JCLOUDS = CONNECTORS + ".JClouds";
     public static final String DOCKER = CONNECTORS + ".Docker";
     public static final String MESOS = CONNECTORS + ".Mesos";
+    public static final String VMM = CONNECTORS + ".VMM";
 
 
     private Loggers() {
