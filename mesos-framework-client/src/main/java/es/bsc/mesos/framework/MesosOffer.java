@@ -1,5 +1,7 @@
 package es.bsc.mesos.framework;
 
+import es.bsc.mesos.framework.log.Loggers;
+
 import org.apache.mesos.Protos.Value.Range;
 import org.apache.mesos.Protos.Resource;
 import org.apache.mesos.Protos.Offer;
@@ -8,20 +10,17 @@ import java.util.List;
 import java.util.LinkedList;
 
 
-public class MesosOffer {
 
+public class MesosOffer {
     private static final int CPUS_WEIGHT = 3;
     private static final int MEM_WEIGHT = 2;
     private static final int DISK_WEIGHT = 1;
-
-    // private static final Logger LOGGER = LogManager.getLogger(Loggers.MESOS_OFFER);
 
     private double cpus;
     private double mem;
     private double disk;
     private List<Range> ports;
     private Offer offer;
-
 
     public MesosOffer() {
         cpus = 0.0;
@@ -58,8 +57,8 @@ public class MesosOffer {
     }
 
     private void countResources(List<Resource> resources) {
-        for (Resource resource : resources) {
-            switch (resource.getName()) {
+        for (Resource resource: resources) {
+            switch(resource.getName()) {
                 case "cpus":
                     cpus += resource.getScalar().getValue();
                     break;
@@ -88,17 +87,19 @@ public class MesosOffer {
 
     @Override
     public String toString() {
-        String portsList = "";
-        for (Range r : ports) {
-            portsList += toString(r);
+        StringBuilder bld = new StringBuilder();
+        for(Range r: ports) {
+            bld.append(r);
         }
-        return String.format("Offer: {cpus: %.2f, mem: %.2f, disk: %.2f, ports: %s}", cpus, mem, disk, portsList);
+        String portsList = bld.toString();
+        return String.format("Offer: {cpus: %.2f, mem: %.2f, disk: %.2f, ports: %s}",
+                cpus, mem, disk, portsList);
     }
 
     public boolean hasEnoughPorts(int minPorts) {
         int portsCount = 0;
-        for (Range portsRange : this.ports) {
-            portsCount += (int) (portsRange.getEnd() - portsRange.getBegin()) + 1;
+        for(Range portsRange: this.ports) {
+            portsCount += (int)(portsRange.getEnd() - portsRange.getBegin()) + 1;
         }
         return portsCount >= minPorts;
     }
@@ -106,7 +107,7 @@ public class MesosOffer {
     public List<Range> getMinPorts(int minPorts) {
         List<Range> minPortsList = new LinkedList<Range>();
         int addedPorts = 0;
-        for (int i = 0; i < this.ports.size(); i++) {
+        for(int i = 0; i < this.ports.size(); i++) {
             Range r = this.ports.get(i);
             int range = (int) (r.getEnd() - r.getBegin());
             if (addedPorts + range < minPorts) {
@@ -124,10 +125,11 @@ public class MesosOffer {
         return minPortsList;
     }
 
+
     public double distance(MesosOffer offer) {
-        double cpusScore = ((offer.cpus - this.cpus) / this.cpus) * CPUS_WEIGHT;
-        double memScore = ((offer.mem - this.mem) / this.mem) * MEM_WEIGHT;
-        double diskScore = ((offer.disk - this.disk) / this.disk) * DISK_WEIGHT;
+        double cpusScore = ((offer.cpus - this.cpus)/this.cpus)*CPUS_WEIGHT;
+        double memScore = ((offer.mem - this.mem)/this.mem)*MEM_WEIGHT;
+        double diskScore = ((offer.disk - this.disk)/this.disk)*DISK_WEIGHT;
 
         if (cpusScore < 0.0 || memScore < 0.0 || diskScore < 0.0) {
             return -1.0;

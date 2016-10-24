@@ -13,7 +13,6 @@ import org.apache.mesos.Protos.FrameworkInfo;
 import org.apache.mesos.Protos.Resource;
 import org.apache.mesos.Protos.TaskState;
 
-
 public class MesosFramework {
 
     private static final int FAILOVER_TIMEOUT = 120_000;
@@ -54,17 +53,18 @@ public class MesosFramework {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MF);
 
+
     private final long runWorkerTimeout;
     private final TimeUnit runWorkerTimeoutUnits;
     private final long killWorkerTimeout;
     private final TimeUnit killWorkerTimeoutUnits;
 
+
     private final MesosFrameworkScheduler scheduler;
     private final MesosSchedulerDriver driver;
 
-
     private String getProperty(Map<String, String> props, String key, String defaultValue) {
-        return props.containsKey(key) ? props.get(key) : defaultValue;
+        return props.containsKey(key)? props.get(key): defaultValue;
     }
 
     public MesosFramework(Map<String, String> props) throws FrameworkException {
@@ -74,21 +74,27 @@ public class MesosFramework {
         }
         String mesosMasterIp = props.get(SERVER_IP);
 
-        // Let mesos fill the current user
-        FrameworkInfo.Builder frameworkBuilder = FrameworkInfo.newBuilder()
-                .setFailoverTimeout(FAILOVER_TIMEOUT).setUser("").setName(FRAMEWORK_NAME);
+        FrameworkInfo.Builder frameworkBuilder = FrameworkInfo.newBuilder().setFailoverTimeout(FAILOVER_TIMEOUT)
+            .setUser("") // Have Mesos fill in the current user.
+            .setName(FRAMEWORK_NAME);
 
         long registerTimeout = Long.parseLong(getProperty(props, MESOS_FRAMEWORK_REGISTER_TIMEOUT, DEFAULT_TIMEOUT));
-        TimeUnit registerTimeoutUnits = TimeUnit.valueOf(getProperty(props, MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
+        TimeUnit registerTimeoutUnits = TimeUnit.valueOf(getProperty(props,
+                MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
         runWorkerTimeout = Long.parseLong(getProperty(props, MESOS_WORKER_WAIT_TIMEOUT, DEFAULT_TIMEOUT));
-        runWorkerTimeoutUnits = TimeUnit.valueOf(getProperty(props, MESOS_WORKER_WAIT_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
+        runWorkerTimeoutUnits = TimeUnit.valueOf(getProperty(props,
+                MESOS_WORKER_WAIT_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
         killWorkerTimeout = Long.parseLong(getProperty(props, MESOS_WORKER_KILL_TIMEOUT, DEFAULT_TIMEOUT));
-        killWorkerTimeoutUnits = TimeUnit.valueOf(getProperty(props, MESOS_WORKER_KILL_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
+        killWorkerTimeoutUnits = TimeUnit.valueOf(getProperty(props,
+                MESOS_WORKER_KILL_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
 
-        int sshPortWorker = Integer.parseInt(getProperty(props, MESOS_WORKER_SSH_PORT, DEFAULT_WORKER_SSH_PORT));
-        ;
-        int openPortsWorker = Integer.parseInt(getProperty(props, MESOS_WORKER_NUM_OPEN_PORTS, DEFAULT_WORKER_OPEN_PORTS));
-        long startingPortWorker = Long.parseLong(getProperty(props, MESOS_WORKER_STARTING_PORT, DEFAULT_WORKER_STARTING_PORT));
+        int sshPortWorker = Integer.parseInt(getProperty(props,
+                MESOS_WORKER_SSH_PORT, DEFAULT_WORKER_SSH_PORT));
+        int openPortsWorker = Integer.parseInt(getProperty(props,
+                MESOS_WORKER_NUM_OPEN_PORTS, DEFAULT_WORKER_OPEN_PORTS));
+        long startingPortWorker = Long.parseLong(getProperty(props,
+                MESOS_WORKER_STARTING_PORT, DEFAULT_WORKER_STARTING_PORT));
+
 
         String mesosDockerImage = getProperty(props, MESOS_DOCKER_IMAGE, DEFAULT_DOCKER_IMAGE);
 
@@ -109,7 +115,8 @@ public class MesosFramework {
                 LOGGER.error("Expecting authentication secret in the environment");
                 throw new FrameworkException("Missing secret in mesos authentication");
             }
-            Credential credential = Credential.newBuilder().setPrincipal(props.get(MESOS_DEFAULT_PRINCIPAL))
+            Credential credential = Credential.newBuilder()
+                    .setPrincipal(props.get(MESOS_DEFAULT_PRINCIPAL))
                     .setSecret(props.get(MESOS_DEFAULT_SECRET)).build();
 
             frameworkBuilder.setPrincipal(props.get(MESOS_DEFAULT_PRINCIPAL));
@@ -123,9 +130,11 @@ public class MesosFramework {
         driver.start();
         try {
             scheduler.waitRegistration(registerTimeout, registerTimeoutUnits);
-        } catch (FrameworkException fe) {
+        } catch(FrameworkException fe) {
             driver.stop();
-            throw new FrameworkException(fe.getMessage() + " Mesos master IP: " + mesosMasterIp);
+            throw fe;
+        } catch (Exception e) {
+            throw new FrameworkException(e.getMessage() + " Mesos master IP: " + mesosMasterIp);
         }
     }
 
@@ -143,8 +152,9 @@ public class MesosFramework {
         LOGGER.info("Waiting worker with id " + id);
         try {
             scheduler.waitTask(id, TaskState.TASK_RUNNING, runWorkerTimeout, runWorkerTimeoutUnits);
-        } catch (FrameworkException fe) {
-            LOGGER.warn("Exception raised waiting for worker " + id + ": " + fe.getMessage());
+        } catch(FrameworkException fe) {
+            LOGGER.warn("Exception raised waiting for worker " + id);
+            LOGGER.warn(fe);
         }
         return scheduler.getTaskIp(id);
     }
@@ -153,8 +163,9 @@ public class MesosFramework {
         LOGGER.info("Remove worker with id " + id);
         try {
             scheduler.removeTask(driver, id, killWorkerTimeout, killWorkerTimeoutUnits);
-        } catch (FrameworkException fe) {
-            LOGGER.warn("Could not remove worker: " + fe.getMessage());
+        } catch(FrameworkException fe) {
+            LOGGER.warn("Could not remove worker " + id);
+            LOGGER.warn(fe);
         }
     }
 

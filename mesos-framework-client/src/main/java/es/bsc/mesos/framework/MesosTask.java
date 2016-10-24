@@ -12,6 +12,7 @@ import java.util.concurrent.Semaphore;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.EnumMap;
 
 
 public class MesosTask {
@@ -31,7 +32,7 @@ public class MesosTask {
         this.id = id;
         this.state = state;
         this.requirements = requirements;
-        this.waitSems = new HashMap<TaskState, Semaphore>();
+        this.waitSems = new EnumMap<TaskState, Semaphore>();
         this.retries = 0;
     }
 
@@ -80,6 +81,7 @@ public class MesosTask {
         }
     }
 
+    @Override
     public String toString() {
         return String.format("[Task %s] state: %s", id, state.toString());
     }
