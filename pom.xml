@@ -6,7 +6,7 @@
 	<!-- GENERAL INFORMATION -->
 	<groupId>es.bsc</groupId>
 	<artifactId>conn-clients</artifactId>
-	<version>1.0-6</version>
+	<version>1.0</version>
 	<packaging>pom</packaging>
 
 	<!-- PROJECT INFORMATION -->
