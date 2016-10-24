@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- GENERAL INFORMATION -->
+	<groupId>es.bsc</groupId>
+	<artifactId>conn-clients</artifactId>
+	<version>1.0-6</version>
+	<packaging>pom</packaging>
+
+	<!-- PROJECT INFORMATION -->
+	<name>COMPSs Connectors Clients</name>
+	<description>COMPSs Connectors Clients</description>
+	<url>http://compss.bsc.es</url>
+	<inceptionYear>2014</inceptionYear>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+		</license>
+	</licenses>
+	<organization>
+		<name>BSC</name>
+		<url>http://www.bsc.es</url>
+	</organization>
+
+	<!-- PROPERTIES -->
+	<properties>
+		<!-- JUnit version -->
+		<junit.version>4.12</junit.version>
+
+		<!-- Log4j version -->
+		<log4j.version>2.6.1</log4j.version>
+
+		<!-- Apache commons versions -->
+		<apache-commons-configuration.version>1.10</apache-commons-configuration.version>
+		<apache-commons-lang3.version>3.4</apache-commons-lang3.version>
+		<apache-commons-collections4.version>4.1</apache-commons-collections4.version>
+
+		<!-- Maven Plugins -->
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
+		<maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
+		<maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+
+		<!-- Version maven -->
+		<versions-maven-plugin.version>2.3</versions-maven-plugin.version>
+		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+
+		<!-- Project encoding -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<!-- SOURCE CONTROL MANAGEMENT -->
+	<scm>
+		<connection>scm:svn:http://compss.bsc.es/svn/projects/conn-clients/</connection>
+		<developerConnection>scm:svn:http://compss.bsc.es/svn/projects/conn-clients/</developerConnection>
+		<url>http://compss.bsc.es/svn/projects/conn-clients/</url>
+	</scm>
+
+	<!-- REPOSITORIES -->
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>http://repo1.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>grid-repo</id>
+			<name>BSC Grid computing and Clusters group</name>
+			<url>http://compss.bsc.es/artifactory/grid-devel-repo</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>http://repo1.maven.apache.org/maven2</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<!-- DISTRIBUTION MANAGEMENT -->
+	<distributionManagement>
+		<repository>
+			<id>grid-repo</id>
+			<name>BSC Grid computing and Clusters group</name>
+			<url>http://compss.bsc.es/artifactory/grid-devel-repo</url>
+		</repository>
+	</distributionManagement>
+
+	<!-- DEPENDENCIES -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- Conn Client commons -->
+			<dependency>
+				<groupId>es.bsc</groupId>
+				<artifactId>commons-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- JUnit -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- Log4j -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+
+			<!-- Apache Commons -->
+			<dependency>
+				<groupId>commons-configuration</groupId>
+				<artifactId>commons-configuration</artifactId>
+				<version>${apache-commons-configuration.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${apache-commons-lang3.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-collections4</artifactId>
+				<version>${apache-commons-collections4.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- BUILD -->
+        <build>
+		<plugins>
+          		<plugin>
+             			<groupId>org.apache.maven.plugins</groupId>
+             			<artifactId>maven-release-plugin</artifactId>
+             			<version>${maven-release-plugin.version}</version>
+         		</plugin>
+        		<plugin>
+                		<groupId>org.codehaus.mojo</groupId>
+                		<artifactId>versions-maven-plugin</artifactId>
+                		<version>${versions-maven-plugin.version}</version>
+         		</plugin>
+		</plugins>
+	</build>
+
+	<!-- SUB-MODULES -->
+	<modules>
+		<module>commons-client</module>
+		<module>docker-client</module>
+		<module>jclouds-client</module>
+		<module>mesos-framework-client</module>
+		<module>rocci-client</module>
+	</modules>
+</project>
