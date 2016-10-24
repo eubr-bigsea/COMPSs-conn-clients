@@ -12,7 +12,6 @@ import java.util.concurrent.Semaphore;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.EnumMap;
 
 
 public class MesosTask {
@@ -28,11 +27,12 @@ public class MesosTask {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MESOS_TASK);
 
+
     public MesosTask(String id, TaskState state, List<Resource> requirements) {
         this.id = id;
         this.state = state;
         this.requirements = requirements;
-        this.waitSems = new EnumMap<TaskState, Semaphore>();
+        this.waitSems = new HashMap<TaskState, Semaphore>();
         this.retries = 0;
     }
 

@@ -78,7 +78,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     public String getFrameworkId() {
-        return frameworkId == null? EMPTY: frameworkId.getValue();
+        return frameworkId == null ? EMPTY : frameworkId.getValue();
     }
 
     public synchronized String generateWorkerId() {
@@ -88,7 +88,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     public String requestWorker(SchedulerDriver driver, List<Resource> resources) {
         LOGGER.debug("Requested worker");
         String newWorkerId = generateWorkerId();
-        synchronized(this) {
+        synchronized (this) {
             pendingTasks.add(newWorkerId);
             tasks.put(newWorkerId, new MesosTask(newWorkerId, TaskState.TASK_STAGING, resources));
             driver.reviveOffers();
@@ -122,27 +122,27 @@ public class MesosFrameworkScheduler implements Scheduler {
         } catch (InterruptedException ex) {
             LOGGER.error("Error waiting for semaphore!", ex);
             Thread.currentThread().interrupt();
+            return false;
         }
     }
 
     public void waitTask(String id, TaskState state, long timeout, TimeUnit unit) throws FrameworkException {
         Semaphore sem = new Semaphore(0);
-        synchronized(tasks) {
+        synchronized (tasks) {
             if (!tasks.containsKey(id)) {
                 throw new FrameworkException("Task with id " + id + " does not exist");
-            } else if(tasks.get(id).getState() == state) {
+            } else if (tasks.get(id).getState() == state) {
                 // Task already in that state, nothing to do
                 return;
             }
             tasks.get(id).addWait(state, sem);
         }
-        LOGGER.debug("Waiting task " + id + " " + timeout + " " + unit.toString()
-                + " to change state to " + state.toString());
-        boolean timeout = acquireSem(sem, timeout, unit);
-        synchronized(tasks) {
+        LOGGER.debug("Waiting task " + id + " " + timeout + " " + unit.toString() + " to change state to " + state.toString());
+        boolean acquired = acquireSem(sem, timeout, unit);
+        synchronized (tasks) {
             if (!tasks.containsKey(id)) {
                 throw new FrameworkException("Task with id " + id + " does not exist");
-            } else if(tasks.get(id).getState() != state || timeout) {
+            } else if (tasks.get(id).getState() != state || acquired) {
                 pendingTasks.remove(id);
                 runningTasks.remove(id);
                 tasks.remove(id);
@@ -167,15 +167,15 @@ public class MesosFrameworkScheduler implements Scheduler {
             releaseRegisterSem();
         } else {
             registerSem = new Semaphore(0);
-            boolean timeout = acquireSem(registerSem, timeout, unit);
-            if (frameworkId == null || timeout) {
+            boolean acquired = acquireSem(registerSem, timeout, unit);
+            if (frameworkId == null || acquired) {
                 throw new FrameworkException("Could not register framework. Check that Mesos master IP is correct.");
             }
         }
     }
 
     public void removeTask(SchedulerDriver driver, String id, long timeout, TimeUnit unit) throws FrameworkException {
-        synchronized(this) {
+        synchronized (this) {
             // Task still in pending queue, not launched to run in Mesos
             if (pendingTasks.contains(id)) {
                 pendingTasks.remove(id);
@@ -190,20 +190,18 @@ public class MesosFrameworkScheduler implements Scheduler {
         tasks.remove(id);
     }
 
-
     private List<MesosOffer> processOffers(List<Offer> offers) {
         List<MesosOffer> mesosOffers = new LinkedList<MesosOffer>();
-        for (Offer offer: offers) {
+        for (Offer offer : offers) {
             mesosOffers.add(new MesosOffer(offer));
         }
         return mesosOffers;
     }
 
-
     private int bestFit(MesosOffer requirements, List<MesosOffer> offers) {
         int index = -1;
         double bestScore = Double.MAX_VALUE;
-        for(int i = 0; i < offers.size(); i++) {
+        for (int i = 0; i < offers.size(); i++) {
             MesosOffer mo = offers.get(i);
             double score = requirements.distance(mo);
             if (mo.hasEnoughPorts(openPorts) && score >= 0.0 && score < bestScore) {
@@ -214,22 +212,18 @@ public class MesosFrameworkScheduler implements Scheduler {
         return index;
     }
 
-
     private DockerInfo.PortMapping buildPortMapping(int container, int host, String protocol) {
-        return DockerInfo.PortMapping.newBuilder().setContainerPort(container).setHostPort(host)
-               .setProtocol(protocol).build();
+        return DockerInfo.PortMapping.newBuilder().setContainerPort(container).setHostPort(host).setProtocol(protocol).build();
     }
 
-
     private void addPortsToDocker(DockerInfo.Builder builder, List<Value.Range> ports) {
-        LinkedList<Integer> portsToAssign = new LinkedList<Integer> ();
+        LinkedList<Integer> portsToAssign = new LinkedList<Integer>();
         portsToAssign.add(new Integer(sshPort));
-        for(int i = 0; i < openPorts - 1; i++) {
+        for (int i = 0; i < openPorts - 1; i++) {
             portsToAssign.add((int) startingPort + i);
         }
-        assignPorts:
-        for(Value.Range r: ports) {
-            for(int host = (int) r.getBegin(); host <= r.getEnd(); host++) {
+        assignPorts: for (Value.Range r : ports) {
+            for (int host = (int) r.getBegin(); host <= r.getEnd(); host++) {
                 Integer containerPort = portsToAssign.pollFirst();
                 if (containerPort == null) {
                     // There is no more ports to assign
@@ -241,9 +235,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private DockerInfo getDockerInfo(List<Value.Range> ports) {
-        DockerInfo.Builder dockerInfoBuilder = DockerInfo.newBuilder()
-                .setImage(dockerImage)
-                .setNetwork(DockerInfo.Network.BRIDGE);
+        DockerInfo.Builder dockerInfoBuilder = DockerInfo.newBuilder().setImage(dockerImage).setNetwork(DockerInfo.Network.BRIDGE);
         addPortsToDocker(dockerInfoBuilder, ports);
         return dockerInfoBuilder.build();
     }
@@ -258,7 +250,7 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     private Value.Ranges buildRanges(List<Value.Range> ranges) {
         Value.Ranges.Builder rangesBuilder = Value.Ranges.newBuilder();
-        for(Value.Range r: ranges) {
+        for (Value.Range r : ranges) {
             rangesBuilder.addRange(r);
         }
         return rangesBuilder.build();
@@ -269,16 +261,14 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private Resource buildResource(String name, double value) {
-        return Resource.newBuilder().setName(name).setType(Value.Type.SCALAR)
-               .setScalar(buildScalar(value)).build();
-   }
+        return Resource.newBuilder().setName(name).setType(Value.Type.SCALAR).setScalar(buildScalar(value)).build();
+    }
 
-   private Resource buildResource(String name, List<Value.Range> ranges) {
-        return Resource.newBuilder().setName(name).setType(Value.Type.RANGES)
-               .setRanges(buildRanges(ranges)).build();
-   }
+    private Resource buildResource(String name, List<Value.Range> ranges) {
+        return Resource.newBuilder().setName(name).setType(Value.Type.RANGES).setRanges(buildRanges(ranges)).build();
+    }
 
-   private TaskInfo getTaskInfo(String idTask, MesosOffer reqs, MesosOffer offer) {
+    private TaskInfo getTaskInfo(String idTask, MesosOffer reqs, MesosOffer offer) {
         TaskID taskId = TaskID.newBuilder().setValue(idTask).build();
 
         List<Value.Range> pickedPorts = offer.getMinPorts(openPorts);
@@ -290,14 +280,9 @@ public class MesosFrameworkScheduler implements Scheduler {
         containerInfoBuilder.setDocker(getDockerInfo(pickedPorts));
 
         // create task to run
-        TaskInfo taskInfo = TaskInfo.newBuilder()
-                .setName("Task " + idTask)
-                .setTaskId(taskId)
-                .setSlaveId(offer.getOffer().getSlaveId())
-                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus()))
-                .addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
-                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk()))
-                .addResources(buildResource(PORTS_RESOURCE, pickedPorts))
+        TaskInfo taskInfo = TaskInfo.newBuilder().setName("Task " + idTask).setTaskId(taskId).setSlaveId(offer.getOffer().getSlaveId())
+                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus())).addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
+                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk())).addResources(buildResource(PORTS_RESOURCE, pickedPorts))
                 .setContainer(containerInfoBuilder).setCommand(commandInfoDocker).build();
 
         LOGGER.debug("Launching task " + taskId.getValue());
@@ -305,7 +290,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private void declineOffers(SchedulerDriver driver, List<OfferID> offerIds) {
-        for(OfferID id: offerIds) {
+        for (OfferID id : offerIds) {
             LOGGER.debug("Decline offer: " + id.getValue());
             driver.declineOffer(id);
         }
@@ -313,7 +298,7 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     private List<OfferID> getOfferIdList(List<Offer> offers) {
         List<OfferID> ids = new LinkedList<OfferID>();
-        for(Offer o: offers) {
+        for (Offer o : offers) {
             ids.add(o.getId());
         }
         return ids;
@@ -330,7 +315,7 @@ public class MesosFrameworkScheduler implements Scheduler {
             return;
         }
         List<MesosOffer> processedOffers = processOffers(offers);
-        for(int n = 0; n < pendingTasks.size(); n++) {
+        for (int n = 0; n < pendingTasks.size(); n++) {
             String id = pendingTasks.get(n);
             if (!tasks.containsKey(id)) {
                 LOGGER.warn("No such id exists: " + id);
@@ -371,7 +356,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     private boolean findIpAddress(NetworkInfo ni, TaskStatus ts) {
         for (NetworkInfo.IPAddress ip : ni.getIpAddressesList()) {
             LOGGER.debug("Found IP address in network: " + ip.getIpAddress());
-            synchronized(tasks) {
+            synchronized (tasks) {
                 tasks.get(ts.getTaskId().getValue()).setIp(ip.getIpAddress());
             }
             return true;
@@ -382,20 +367,19 @@ public class MesosFrameworkScheduler implements Scheduler {
     private void getIpAddress(TaskStatus status) {
         // TODO Check that network assigned is correct, for now using first IP found
         List<NetworkInfo> networks = status.getContainerStatus().getNetworkInfosList();
-        for (NetworkInfo ni: networks) {
+        for (NetworkInfo ni : networks) {
             if (findIpAddress(ni, status)) {
                 return;
             }
         }
     }
 
-
     @Override
     public synchronized void statusUpdate(SchedulerDriver driver, TaskStatus status) {
         String id = status.getTaskId().getValue();
         TaskState state = status.getState();
-        LOGGER.debug(String.format("Status update: task %s is in state %s. Reason: %s Message: %s",
-                id, state, status.getReason().getNumber(), status.getMessage()));
+        LOGGER.debug(String.format("Status update: task %s is in state %s. Reason: %s Message: %s", id, state,
+                status.getReason().getNumber(), status.getMessage()));
         if (!tasks.containsKey(id)) {
             LOGGER.warn("No such id exists: " + id);
             return;
@@ -432,7 +416,6 @@ public class MesosFrameworkScheduler implements Scheduler {
         }
     }
 
-
     @Override
     public synchronized void registered(SchedulerDriver driver, FrameworkID frameworkId, MasterInfo masterInfo) {
         LOGGER.info("Framework registered with ID " + frameworkId.getValue());
@@ -452,8 +435,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     @Override
-    public void frameworkMessage(SchedulerDriver driver, ExecutorID executorId, SlaveID slaveId,
-             byte[] data) {
+    public void frameworkMessage(SchedulerDriver driver, ExecutorID executorId, SlaveID slaveId, byte[] data) {
         LOGGER.debug("Message received");
     }
 
@@ -463,8 +445,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     @Override
-    public void executorLost(SchedulerDriver driver, ExecutorID executorId, SlaveID slaveId,
-            int status) {
+    public void executorLost(SchedulerDriver driver, ExecutorID executorId, SlaveID slaveId, int status) {
         // Nothing to do, need to Override
     }
 
