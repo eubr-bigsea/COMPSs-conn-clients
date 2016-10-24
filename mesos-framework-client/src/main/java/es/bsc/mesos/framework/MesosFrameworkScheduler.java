@@ -114,12 +114,13 @@ public class MesosFrameworkScheduler implements Scheduler {
         }
     }
 
-    private void acquireSem(Semaphore sem, long timeout, TimeUnit unit) {
+    private boolean acquireSem(Semaphore sem, long timeout, TimeUnit unit) {
         try {
             LOGGER.debug("Acquire semaphore " + sem.toString());
-            sem.tryAcquire(timeout, unit);
+            return sem.tryAcquire(timeout, unit);
         } catch (InterruptedException ex) {
             LOGGER.error("Error waiting for semaphore!", ex);
+            return false;
         }
     }
 
@@ -135,11 +136,11 @@ public class MesosFrameworkScheduler implements Scheduler {
             tasks.get(id).addWait(state, sem);
         }
         LOGGER.debug("Waiting task " + id + " " + timeout + " " + unit.toString() + " to change state to " + state.toString());
-        acquireSem(sem, timeout, unit);
+        boolean acquired = acquireSem(sem, timeout, unit);
         synchronized (tasks) {
             if (!tasks.containsKey(id)) {
                 throw new FrameworkException("Task with id " + id + " does not exist");
-            } else if (tasks.get(id).getState() != state) {
+            } else if (!acquired || tasks.get(id).getState() != state) {
                 pendingTasks.remove(id);
                 runningTasks.remove(id);
                 tasks.remove(id);
@@ -164,8 +165,8 @@ public class MesosFrameworkScheduler implements Scheduler {
             releaseRegisterSem();
         } else {
             registerSem = new Semaphore(0);
-            acquireSem(registerSem, timeout, unit);
-            if (frameworkId == null) {
+            boolean acquired = acquireSem(registerSem, timeout, unit);
+            if (!acquired || frameworkId == null) {
                 throw new FrameworkException("Could not register framework. Check that Mesos master IP is correct.");
             }
         }

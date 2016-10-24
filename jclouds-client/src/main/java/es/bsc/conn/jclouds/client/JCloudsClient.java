@@ -44,6 +44,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.inject.Module;
 
+import es.bsc.conn.exceptions.ConnectorException;
 import es.bsc.conn.loggers.Loggers;
 
 
@@ -61,10 +62,10 @@ public class JCloudsClient {
     ComputeService computeService;
 
 
-    public JCloudsClient(String user, String credential, String provider, String endpoint) throws Exception {
+    public JCloudsClient(String user, String credential, String provider, String endpoint) throws ConnectorException {
         LOGGER.info("Creating JClouds Client");
         if (!allKeys.contains(provider)) {
-            throw new Exception("Provider is not in the list. Available providers are: " + allKeys);
+            throw new ConnectorException("Provider is not in the list. Available providers are: " + allKeys);
         }
         ContextBuilder contextBuilder = ContextBuilder.newBuilder(provider);
         if (endpoint != null && !endpoint.isEmpty()) {
@@ -101,8 +102,6 @@ public class JCloudsClient {
             return credential;
         } catch (IOException e) {
             LOGGER.error("Exception reading private key from '%s': " + filename, e);
-            e.printStackTrace();
-            System.exit(1);
             return null;
         }
     }

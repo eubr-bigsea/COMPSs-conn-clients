@@ -213,11 +213,9 @@ public class DockerClient {
      * @param reqDiskSizeGB
      *            The requested disk size in GB.
      * @return The created container's id.
-     * @throws Exception
-     *             For example, if there is an existing container with name containerName
      */
     public String createContainer(String image, String containerName, int[] exposedPorts, int reqCpuShares, float reqMemoryGB,
-            String... cmd) throws Exception {
+            String... cmd) {
 
         List<ExposedPort> exposedPortsList = new ArrayList<ExposedPort>();
         for (int p : exposedPorts) {
@@ -232,7 +230,7 @@ public class DockerClient {
         return ccr.getId();
     }
 
-    public String createContainer(String image, String containerName, int[] exposedPorts, String... cmd) throws Exception {
+    public String createContainer(String image, String containerName, int[] exposedPorts, String... cmd) {
 
         List<ExposedPort> exposedPortsList = new ArrayList<ExposedPort>();
         for (int p : exposedPorts) {
@@ -249,7 +247,7 @@ public class DockerClient {
     /**
      * Creates a container without opening ports.
      */
-    public String createContainer(String image, String containerName, String... cmd) throws Exception {
+    public String createContainer(String image, String containerName, String... cmd) {
         return createContainer(image, containerName, new int[] {}, cmd);
     }
 
