@@ -31,4 +31,5 @@ public class RocciClientTest {
     public void rocciClientTest() throws Exception {
         LOGGER.info("Test passed");
     }
+    
 }
