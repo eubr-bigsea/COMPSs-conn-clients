@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.junit.Test;
 
+import es.bsc.conn.clients.mesos.framework.MesosFramework;
+
 
 public class MesosFrameworkTest {
 
