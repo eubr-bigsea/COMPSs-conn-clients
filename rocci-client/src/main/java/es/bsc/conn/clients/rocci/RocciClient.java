@@ -48,17 +48,15 @@ public class RocciClient {
 
     public String getResourceStatus(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Status from Resource " + resourceId);
-        String resStatus = null;
         String jsonOutput = describeResource(resourceId);
-
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         jsonOutput = "{\"resources\":" + jsonOutput + "}";
 
-        // convert the json string back to object
+        // Convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
-        resStatus = obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
-
-        return resStatus;
+        
+        // Get state
+        return obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
     }
 
     public String getResourceAddress(String resourceId) throws ConnClientException {
