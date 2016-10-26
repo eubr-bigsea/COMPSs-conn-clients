@@ -81,6 +81,61 @@ public class RocciClient {
         }
         return res_ip;
     }
+    
+    public Object[] get_hardware_description(String resourceId) throws ConnClientException {
+        LOGGER.debug("Get Hardware description from Resource " + resourceId);
+        
+        String jsonOutput = describe_resource(resourceId);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        jsonOutput = "{\"resources\":" + jsonOutput + "}";
+
+        // Convert the json string back to object
+        JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
+        
+        // Retrieve hardware information
+        // Memory
+        Float memory = null; 
+        for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
+            if (obj.getResources().get(0).getAttributes().getOcci().getCompute().getMemory() != null) {
+                memory = obj.getResources().get(0).getAttributes().getOcci().getCompute().getMemory();
+                break;
+            }
+        }
+        
+        // Storage
+        Float storage = null;
+        
+        // Cores
+        Integer cores = null;
+        for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
+            if (obj.getResources().get(0).getAttributes().getOcci().getCompute().getCores() != null) {
+                cores = obj.getResources().get(0).getAttributes().getOcci().getCompute().getCores();
+                break;
+            }
+        }
+        
+        // Architecture
+        String architecture = null;
+        for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
+            if (obj.getResources().get(0).getAttributes().getOcci().getCompute().getArchitecture() != null) {
+                architecture = obj.getResources().get(0).getAttributes().getOcci().getCompute().getArchitecture();
+                break;
+            }
+        }
+        
+        // Speed
+        Float speed = null;
+        for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
+            if (obj.getResources().get(0).getAttributes().getOcci().getCompute().getSpeed() != null) {
+                speed = obj.getResources().get(0).getAttributes().getOcci().getCompute().getSpeed();
+                break;
+            }
+        }
+
+        // Create return hardware description of the form {memSize, storageSize, cores, architecture, speed}
+        Object[] hd = new Object[] { memory, storage, cores, architecture, speed };
+        return hd;
+    }
 
     public void delete_compute(String resource_id) {
         String cmd = cmd_line + "--action delete" + " --resource " + resource_id;
@@ -137,7 +192,7 @@ public class RocciClient {
 
             p.waitFor();
             LOGGER.info("Excute CMD exitValue: " + p.exitValue());
-            LOGGER.debug("__________________________________________");
+            LOGGER.info("__________________________________________");
             return return_string;
         } catch (IOException e) {
             throw new ConnClientException(e);
