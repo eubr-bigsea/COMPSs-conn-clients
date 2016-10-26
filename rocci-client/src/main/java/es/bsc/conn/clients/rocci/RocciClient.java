@@ -42,6 +42,7 @@ public class RocciClient {
             resDesc = executeCmd(cmd);
         } catch (InterruptedException e) {
             LOGGER.error("Error on Describe CMD", e);
+            throw new ConnClientException(e);
         }
         return resDesc;
     }

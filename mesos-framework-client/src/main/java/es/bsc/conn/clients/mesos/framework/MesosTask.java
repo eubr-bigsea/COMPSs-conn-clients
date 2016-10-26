@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.Semaphore;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.EnumMap;
 
 
 public class MesosTask {
@@ -32,7 +32,7 @@ public class MesosTask {
         this.id = id;
         this.state = state;
         this.requirements = requirements;
-        this.waitSems = new HashMap<TaskState, Semaphore>();
+        this.waitSems = new EnumMap<TaskState, Semaphore>(TaskState.class);
         this.retries = 0;
     }
 
