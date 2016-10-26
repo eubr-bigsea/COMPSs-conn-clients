@@ -21,15 +21,18 @@ public class RocciClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.ROCCI);
 
-    private String cmdLine = "";
-    private String attributes = "";
+    private final String cmdLine;
+    private final String attributes;
 
 
     public RocciClient(List<String> cmd_string, String attr) {
         LOGGER.info("Initializing RocciClient");
+        StringBuilder sb = new StringBuilder();
         for (String s : cmd_string) {
-            cmdLine += s + " ";
+            sb.append(s).append(" ");
         }
+        
+        cmdLine = sb.toString();
         attributes = attr;
     }
 
@@ -40,9 +43,9 @@ public class RocciClient {
         try {
             LOGGER.debug("Describe CMD: " + cmd);
             resDesc = executeCmd(cmd);
-        } catch (InterruptedException e) {
-            LOGGER.error("Error on Describe CMD", e);
-            throw new ConnClientException(e);
+        } catch (ConnClientException ie) {
+            LOGGER.error("Error on Describe CMD", ie);
+            throw new ConnClientException(ie);
         }
         return resDesc;
     }
@@ -139,7 +142,7 @@ public class RocciClient {
         String cmd = cmdLine + "--action delete" + " --resource " + resourceId;
         try {
             executeCmd(cmd);
-        } catch (ConnClientException | InterruptedException e) {
+        } catch (ConnClientException e) {
             LOGGER.error("Cannot delete resource with id " + resourceId, e);
         }
     }
@@ -153,15 +156,14 @@ public class RocciClient {
         try {
             LOGGER.debug("Create CMD: " + cmd);
             s = executeCmd(cmd);
-        } catch (ConnClientException | InterruptedException e) {
+        } catch (ConnClientException e) {
             LOGGER.error("Error on Create CMD", e);
         }
 
         return s;
     }
 
-    private String executeCmd(String cmdArgs) throws ConnClientException, InterruptedException {
-        String returnSTR = "";
+    private String executeCmd(String cmdArgs) throws ConnClientException {
         String[] cmd = { "/bin/bash", "-c", "occi " + cmdArgs };
         try {
             LOGGER.info("Execute CMD: " + Arrays.toString(cmd));
@@ -172,23 +174,26 @@ public class RocciClient {
 
             // Read the output from the command
             LOGGER.debug("Execute CMD Output:");
-            String s1;
-            while ((s1 = stdInput1.readLine()) != null) {
-                LOGGER.debug(s1);
-                returnSTR += s1;
+            String line;
+            StringBuilder cmdResult = new StringBuilder();
+            while ((line = stdInput1.readLine()) != null) {
+                LOGGER.debug(line);
+                cmdResult.append(line);
             }
 
             // Read any errors from the attempted command
             LOGGER.error("Execute CMD Error:");
-            while ((s1 = stdError1.readLine()) != null) {
-                LOGGER.error(s1);
+            while ((line = stdError1.readLine()) != null) {
+                LOGGER.error(line);
             }
 
             p.waitFor();
+            
             LOGGER.info("Excute CMD exitValue: " + p.exitValue());
             LOGGER.info("__________________________________________");
-            return returnSTR;
-        } catch (IOException e) {
+            
+            return cmdResult.toString();
+        } catch (IOException | InterruptedException e) {
             throw new ConnClientException(e);
         }
     }
