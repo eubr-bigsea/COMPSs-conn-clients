@@ -67,6 +67,14 @@ public class MesosFrameworkScheduler implements Scheduler {
     private String dockerImage;
 
 
+    /**
+     * Creates a new Mesos Framework scheduler
+     * 
+     * @param image
+     * @param sshPort
+     * @param openPorts
+     * @param startingPort
+     */
     public MesosFrameworkScheduler(String image, int sshPort, int openPorts, long startingPort) {
         LOGGER.debug("Initialize " + this.getClass().getName() + "with image " + image);
         this.dockerImage = image;
@@ -192,7 +200,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private List<MesosOffer> processOffers(List<Offer> offers) {
-        List<MesosOffer> mesosOffers = new LinkedList<MesosOffer>();
+        List<MesosOffer> mesosOffers = new LinkedList<>();
         for (Offer offer : offers) {
             mesosOffers.add(new MesosOffer(offer));
         }
@@ -223,14 +231,17 @@ public class MesosFrameworkScheduler implements Scheduler {
         for (int i = 0; i < openPorts - 1; i++) {
             portsToAssign.add((int) startingPort + i);
         }
-        assignPorts: for (Value.Range r : ports) {
-            for (int host = (int) r.getBegin(); host <= r.getEnd(); host++) {
+        boolean assignedPorts = false;
+        for (int i = 0; i < ports.size() && !assignedPorts; ++i) {
+            Value.Range r = ports.get(i);
+            for (int host = (int) r.getBegin(); host <= r.getEnd() && !assignedPorts; host++) {
                 Integer containerPort = portsToAssign.pollFirst();
                 if (containerPort == null) {
                     // There is no more ports to assign
-                    break assignPorts;
+                    assignedPorts = true;
+                } else {
+                    builder.addPortMappings(buildPortMapping((int) containerPort, host, "tcp"));
                 }
-                builder.addPortMappings(buildPortMapping((int) containerPort, host, "tcp"));
             }
         }
     }
@@ -242,8 +253,8 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private void launchTask(SchedulerDriver driver, Offer offer, TaskInfo task) {
-        List<TaskInfo> tasksToSubmit = new ArrayList<TaskInfo>();
-        List<OfferID> offerIds = new ArrayList<OfferID>();
+        List<TaskInfo> tasksToSubmit = new ArrayList<>();
+        List<OfferID> offerIds = new ArrayList<>();
         tasksToSubmit.add(task);
         offerIds.add(offer.getId());
         driver.launchTasks(offerIds, tasksToSubmit);
@@ -298,7 +309,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private List<OfferID> getOfferIdList(List<Offer> offers) {
-        List<OfferID> ids = new LinkedList<OfferID>();
+        List<OfferID> ids = new LinkedList<>();
         for (Offer o : offers) {
             ids.add(o.getId());
         }

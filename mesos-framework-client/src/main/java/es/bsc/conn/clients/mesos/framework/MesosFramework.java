@@ -64,10 +64,12 @@ public class MesosFramework {
     private final MesosSchedulerDriver driver;
 
 
-    private String getProperty(Map<String, String> props, String key, String defaultValue) {
-        return props.containsKey(key) ? props.get(key) : defaultValue;
-    }
-
+    /**
+     * Creates a new MesosFramework client with the given properties
+     * 
+     * @param props
+     * @throws FrameworkException
+     */
     public MesosFramework(Map<String, String> props) throws FrameworkException {
 
         if (!props.containsKey(SERVER_IP)) {
@@ -75,13 +77,8 @@ public class MesosFramework {
         }
         String mesosMasterIp = props.get(SERVER_IP);
 
-        FrameworkInfo.Builder frameworkBuilder = FrameworkInfo.newBuilder().setFailoverTimeout(FAILOVER_TIMEOUT).setUser("") // Have
-                                                                                                                             // Mesos
-                                                                                                                             // fill
-                                                                                                                             // in
-                                                                                                                             // the
-                                                                                                                             // current
-                                                                                                                             // user.
+        // Have mesos fill in the current user
+        FrameworkInfo.Builder frameworkBuilder = FrameworkInfo.newBuilder().setFailoverTimeout(FAILOVER_TIMEOUT).setUser("")
                 .setName(FRAMEWORK_NAME);
 
         long registerTimeout = Long.parseLong(getProperty(props, MESOS_FRAMEWORK_REGISTER_TIMEOUT, DEFAULT_TIMEOUT));
@@ -131,8 +128,6 @@ public class MesosFramework {
         } catch (FrameworkException fe) {
             driver.stop();
             throw fe;
-        } catch (Exception e) {
-            throw new FrameworkException(e.getMessage() + " Mesos master IP: " + mesosMasterIp);
         }
     }
 
@@ -170,6 +165,10 @@ public class MesosFramework {
     public void stop() {
         LOGGER.info("Stoping Mesos Framework");
         driver.stop();
+    }
+
+    private String getProperty(Map<String, String> props, String key, String defaultValue) {
+        return props.containsKey(key) ? props.get(key) : defaultValue;
     }
 
 }

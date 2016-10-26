@@ -30,7 +30,7 @@ public class DockerClient {
     private static final int MIN_CPU_SHARES = 2;
     private static final int MIN_MEMORY_SIZE_GB = 1;
 
-    private com.github.dockerjava.api.DockerClient dockerClient;
+    private com.github.dockerjava.api.DockerClient internalDockerClient;
 
 
     /**
@@ -48,7 +48,7 @@ public class DockerClient {
     public static DockerClient build(DockerClientConfig config) {
         LOGGER.info("Creating DockerClient from build method");
         DockerClient dc = new DockerClient();
-        dc.dockerClient = DockerClientBuilder.getInstance(config).build();
+        dc.internalDockerClient = DockerClientBuilder.getInstance(config).build();
 
         return dc;
     }
@@ -57,10 +57,10 @@ public class DockerClient {
      * Gets a list of all the containers in the host (either running, stopped, restarting, etc.)
      */
     public List<Container> getContainersList() {
-        List<Container> l = new ArrayList<Container>();
+        List<Container> l = new ArrayList<>();
         l.addAll(getStoppedContainersList());
         l.addAll(getRunningContainersList());
-        l.addAll(dockerClient.listContainersCmd().withShowAll(true).withStatusFilter("restarting").exec());
+        l.addAll(internalDockerClient.listContainersCmd().withShowAll(true).withStatusFilter("restarting").exec());
         return l;
     }
 
@@ -68,8 +68,8 @@ public class DockerClient {
      * Gets a list of all the running containers in the host
      */
     public List<Container> getRunningContainersList() {
-        List<Container> l = new ArrayList<Container>();
-        l.addAll(dockerClient.listContainersCmd().withShowAll(true).withStatusFilter("running").exec());
+        List<Container> l = new ArrayList<>();
+        l.addAll(internalDockerClient.listContainersCmd().withShowAll(true).withStatusFilter("running").exec());
         return l;
     }
 
@@ -77,10 +77,10 @@ public class DockerClient {
      * Gets a list of all the stopped containers in the host (this includes the "CREATED" containers but not started)
      */
     public List<Container> getStoppedContainersList() {
-        List<Container> l = new ArrayList<Container>();
-        l.addAll(dockerClient.listContainersCmd().withShowAll(true).withStatusFilter("created").exec());
-        l.addAll(dockerClient.listContainersCmd().withShowAll(true).withStatusFilter("paused").exec());
-        l.addAll(dockerClient.listContainersCmd().withShowAll(true).withStatusFilter("exited").exec());
+        List<Container> l = new ArrayList<>();
+        l.addAll(internalDockerClient.listContainersCmd().withShowAll(true).withStatusFilter("created").exec());
+        l.addAll(internalDockerClient.listContainersCmd().withShowAll(true).withStatusFilter("paused").exec());
+        l.addAll(internalDockerClient.listContainersCmd().withShowAll(true).withStatusFilter("exited").exec());
         return l;
     }
 
@@ -118,21 +118,21 @@ public class DockerClient {
     /**
      * Starts a previously created container.
      * 
-     * @param The
-     *            id of the container to be started
+     * @param containerId
+     *            The id of the container to be started
      */
     public void startContainer(String containerId) {
-        dockerClient.startContainerCmd(containerId).exec();
+        internalDockerClient.startContainerCmd(containerId).exec();
     }
 
     /**
      * Restarts a previously created container.
      * 
-     * @param The
-     *            id of the container to be restarted
+     * @param containerId
+     *            The id of the container to be restarted
      */
     public void restartContainer(String containerId) {
-        dockerClient.restartContainerCmd(containerId).exec();
+        internalDockerClient.restartContainerCmd(containerId).exec();
     }
 
     /**
@@ -143,7 +143,7 @@ public class DockerClient {
      * @return
      */
     public InspectContainerResponse inspectContainer(String containerId) {
-        return dockerClient.inspectContainerCmd(containerId).withContainerId(containerId).exec();
+        return internalDockerClient.inspectContainerCmd(containerId).withContainerId(containerId).exec();
     }
 
     /**
@@ -159,6 +159,9 @@ public class DockerClient {
     /**
      * Returns the RAM size in GB for the container with id containerId. Specifically, it returns the "Memory" field in
      * the docker inspect. IMPORTANT: this will be 0 if they aren't explicitly set by the user.
+     * 
+     * @param containerId
+     * @return
      */
     public int getMemoryGB(String containerId) {
         Long mem = inspectContainer(containerId).getHostConfig().getMemory();
@@ -170,6 +173,9 @@ public class DockerClient {
      * Returns the cpu shares for the container with id containerId. This is useful for Docker Swarm for example, where
      * cpu shares are the same as the number of processors used. IMPORTANT: this will be 0 if they aren't explicitly set
      * by the user.
+     * 
+     * @param containerId
+     * @return
      */
     public int getCpuShares(String containerId) {
         return inspectContainer(containerId).getHostConfig().getCpuShares();
@@ -178,6 +184,9 @@ public class DockerClient {
     /**
      * Returns the disk size for the container with id containerId. IMPORTANT: this will be 0 if they aren't explicitly
      * set by the user.
+     * 
+     * @param containerId
+     * @return
      */
     public int getDiskSize(String containerId) {
         Integer size = inspectContainer(containerId).getSizeRootFs();
@@ -217,12 +226,12 @@ public class DockerClient {
     public String createContainer(String image, String containerName, int[] exposedPorts, int reqCpuShares, float reqMemoryGB,
             String... cmd) {
 
-        List<ExposedPort> exposedPortsList = new ArrayList<ExposedPort>();
+        List<ExposedPort> exposedPortsList = new ArrayList<>();
         for (int p : exposedPorts) {
             exposedPortsList.add(new ExposedPort(p));
         }
 
-        CreateContainerCmd ccc = dockerClient.createContainerCmd(image).withName(containerName).withCmd(cmd)
+        CreateContainerCmd ccc = internalDockerClient.createContainerCmd(image).withName(containerName).withCmd(cmd)
                 .withCpuShares(Math.max(MIN_CPU_SHARES, reqCpuShares))
                 .withMemory(Math.max(MIN_MEMORY_SIZE_GB, (long) (reqMemoryGB * BYTES_IN_ONE_GB))).withExposedPorts(exposedPortsList);
 
@@ -230,14 +239,23 @@ public class DockerClient {
         return ccr.getId();
     }
 
+    /**
+     * Creates a new container in the host, BUT DOES NOT START IT.
+     * 
+     * @param image
+     * @param containerName
+     * @param exposedPorts
+     * @param cmd
+     * @return
+     */
     public String createContainer(String image, String containerName, int[] exposedPorts, String... cmd) {
 
-        List<ExposedPort> exposedPortsList = new ArrayList<ExposedPort>();
+        List<ExposedPort> exposedPortsList = new ArrayList<>();
         for (int p : exposedPorts) {
             exposedPortsList.add(new ExposedPort(p));
         }
 
-        CreateContainerCmd ccc = dockerClient.createContainerCmd(image).withName(containerName).withCmd(cmd)
+        CreateContainerCmd ccc = internalDockerClient.createContainerCmd(image).withName(containerName).withCmd(cmd)
                 .withExposedPorts(exposedPortsList);
 
         CreateContainerResponse ccr = ccc.exec();
@@ -246,6 +264,11 @@ public class DockerClient {
 
     /**
      * Creates a container without opening ports.
+     * 
+     * @param image
+     * @param containerName
+     * @param cmd
+     * @return
      */
     public String createContainer(String image, String containerName, String... cmd) {
         return createContainer(image, containerName, new int[] {}, cmd);
@@ -253,6 +276,9 @@ public class DockerClient {
 
     /**
      * Returns the first found container whose name is containerName.
+     * 
+     * @param containerName
+     * @return
      */
     public Container getContainerByName(String containerName) {
         List<Container> containers = getContainersList();
@@ -267,6 +293,9 @@ public class DockerClient {
 
     /**
      * Returns the container whose id is containerId. The id of a container is the long hash that Docker binds to it.
+     * 
+     * @param containerId
+     * @return
      */
     public Container getContainerById(String containerId) {
         List<Container> containers = getContainersList();
@@ -279,28 +308,32 @@ public class DockerClient {
     }
 
     /**
-     * Stops a container.
+     * Stops a container
+     * 
+     * @param containerId
      */
     public void stopContainer(String containerId) {
-        dockerClient.stopContainerCmd(containerId).exec();
+        internalDockerClient.stopContainerCmd(containerId).exec();
     }
 
     /**
      * Forces the removal of one container
      * 
-     * @param containerName
+     * @param containerId
      */
     public void removeContainer(String containerId) {
-        RemoveContainerCmd rcc = dockerClient.removeContainerCmd(containerId).withForce(true);
+        RemoveContainerCmd rcc = internalDockerClient.removeContainerCmd(containerId).withForce(true);
         rcc.exec();
     }
 
     /**
      * Returns the internal DockerClient, which has extended functionalities. This can save you if you want to do more
      * complex stuff but can't/don't want to change this DockerClient class. You're welcome :)
+     * 
+     * @return
      */
     public com.github.dockerjava.api.DockerClient getInternalDockerClient() {
-        return dockerClient;
+        return internalDockerClient;
     }
 
 }

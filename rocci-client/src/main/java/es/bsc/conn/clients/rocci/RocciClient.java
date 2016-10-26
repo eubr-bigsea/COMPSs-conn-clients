@@ -21,50 +21,50 @@ public class RocciClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.ROCCI);
 
-    private String cmd_line = "";
+    private String cmdLine = "";
     private String attributes = "";
 
 
     public RocciClient(List<String> cmd_string, String attr) {
         LOGGER.info("Initializing RocciClient");
         for (String s : cmd_string) {
-            cmd_line += s + " ";
+            cmdLine += s + " ";
         }
         attributes = attr;
     }
 
-    public String describe_resource(String resource_id) throws ConnClientException {
-        String res_desc = "";
-        String cmd = cmd_line + "--action describe" + " --resource " + resource_id;
+    public String describeResource(String resourceId) throws ConnClientException {
+        String resDesc = "";
+        String cmd = cmdLine + "--action describe" + " --resource " + resourceId;
 
         try {
             LOGGER.debug("Describe CMD: " + cmd);
-            res_desc = execute_cmd(cmd);
+            resDesc = executeCmd(cmd);
         } catch (InterruptedException e) {
             LOGGER.error("Error on Describe CMD", e);
         }
-        return res_desc;
+        return resDesc;
     }
 
-    public String get_resource_status(String resource_id) throws ConnClientException {
-        LOGGER.debug("Get Status from Resource " + resource_id);
-        String res_status = null;
-        String jsonOutput = describe_resource(resource_id);
+    public String getResourceStatus(String resourceId) throws ConnClientException {
+        LOGGER.debug("Get Status from Resource " + resourceId);
+        String resStatus = null;
+        String jsonOutput = describeResource(resourceId);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         jsonOutput = "{\"resources\":" + jsonOutput + "}";
 
         // convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
-        res_status = obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
+        resStatus = obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
 
-        return res_status;
+        return resStatus;
     }
 
-    public String get_resource_address(String resource_id) throws ConnClientException {
-        LOGGER.debug("Get Address from Resource " + resource_id);
-        String res_ip = null;
-        String jsonOutput = describe_resource(resource_id);
+    public String getResourceAddress(String resourceId) throws ConnClientException {
+        LOGGER.debug("Get Address from Resource " + resourceId);
+        String resIP = null;
+        String jsonOutput = describeResource(resourceId);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -75,17 +75,17 @@ public class RocciClient {
 
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); i++) {
             if (obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface() != null) {
-                res_ip = obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface().getAddress();
+                resIP = obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface().getAddress();
                 break;
             }
         }
-        return res_ip;
+        return resIP;
     }
     
-    public Object[] get_hardware_description(String resourceId) throws ConnClientException {
+    public Object[] getHardwareDescription(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Hardware description from Resource " + resourceId);
         
-        String jsonOutput = describe_resource(resourceId);
+        String jsonOutput = describeResource(resourceId);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         jsonOutput = "{\"resources\":" + jsonOutput + "}";
 
@@ -132,32 +132,28 @@ public class RocciClient {
             }
         }
 
-        // Create return hardware description of the form {memSize, storageSize, cores, architecture, speed}
-        Object[] hd = new Object[] { memory, storage, cores, architecture, speed };
-        return hd;
+        // Create return hardware description of the form [memSize, storageSize, cores, architecture, speed]
+        return new Object[] { memory, storage, cores, architecture, speed };
     }
 
-    public void delete_compute(String resource_id) {
-        String cmd = cmd_line + "--action delete" + " --resource " + resource_id;
+    public void deleteCompute(String resourceId) {
+        String cmd = cmdLine + "--action delete" + " --resource " + resourceId;
         try {
-            execute_cmd(cmd);
+            executeCmd(cmd);
         } catch (ConnClientException | InterruptedException e) {
-            LOGGER.error("Cannot delete resource with id " + resource_id, e);
-            System.out.println(e);
-        } catch (Exception e) {
-            LOGGER.error("Cannot delete resource with id " + resource_id, e);
+            LOGGER.error("Cannot delete resource with id " + resourceId, e);
         }
     }
 
-    public String create_compute(String os_tpl, String resource_tpl) {
+    public String createCompute(String osTPL, String resourceTPL) {
         String s = "";
 
-        String cmd = cmd_line + " --action create" + " --resource compute -M os_tpl#" + os_tpl + " -M resource_tpl#" + resource_tpl
+        String cmd = cmdLine + " --action create" + " --resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
                 + " --attribute occi.core.title=\"" + attributes + "\"";
 
         try {
             LOGGER.debug("Create CMD: " + cmd);
-            s = execute_cmd(cmd);
+            s = executeCmd(cmd);
         } catch (ConnClientException | InterruptedException e) {
             LOGGER.error("Error on Create CMD", e);
         }
@@ -165,26 +161,25 @@ public class RocciClient {
         return s;
     }
 
-    private String execute_cmd(String cmd_args) throws ConnClientException, InterruptedException {
-        String return_string = "";
-        String[] cmd_line = { "/bin/bash", "-c", "occi " + cmd_args };
+    private String executeCmd(String cmdArgs) throws ConnClientException, InterruptedException {
+        String returnSTR = "";
+        String[] cmd = { "/bin/bash", "-c", "occi " + cmdArgs };
         try {
-            LOGGER.info("Execute CMD: " + Arrays.toString(cmd_line));
-            Process p = Runtime.getRuntime().exec(cmd_line);
+            LOGGER.info("Execute CMD: " + Arrays.toString(cmd));
+            Process p = Runtime.getRuntime().exec(cmd);
 
             BufferedReader stdInput1 = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
             BufferedReader stdError1 = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-            // read the output from the command
+            // Read the output from the command
             LOGGER.debug("Execute CMD Output:");
-            String s1 = null;
+            String s1;
             while ((s1 = stdInput1.readLine()) != null) {
                 LOGGER.debug(s1);
-                return_string += s1;
+                returnSTR += s1;
             }
 
-            // read any errors from the attempted command
+            // Read any errors from the attempted command
             LOGGER.error("Execute CMD Error:");
             while ((s1 = stdError1.readLine()) != null) {
                 LOGGER.error(s1);
@@ -193,7 +188,7 @@ public class RocciClient {
             p.waitFor();
             LOGGER.info("Excute CMD exitValue: " + p.exitValue());
             LOGGER.info("__________________________________________");
-            return return_string;
+            return returnSTR;
         } catch (IOException e) {
             throw new ConnClientException(e);
         }

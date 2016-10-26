@@ -106,8 +106,8 @@ public class JCloudsClient {
         try {
             String fileContents = Files.toString(new File(filename), UTF_8);
             Supplier<Credentials> credentialSupplier = new GoogleCredentialsFromJson(fileContents);
-            String credential = credentialSupplier.get().credential;
-            return credential;
+            
+            return credentialSupplier.get().credential;
         } catch (IOException e) {
             LOGGER.error("Exception reading private key from '%s': " + filename, e);
             return null;

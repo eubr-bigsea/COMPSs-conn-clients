@@ -2,7 +2,10 @@ package es.bsc.conn.clients.mesos.framework.log;
 
 import es.bsc.conn.clients.exceptions.NonInstantiableException;
 
-
+/**
+ * Loggers' names for Mesos Connector Components
+ *
+ */
 public final class Loggers {
 
     // Mesos Framework
