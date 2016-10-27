@@ -48,13 +48,13 @@ public class VMMClient {
      * @return the vmId
      * @throws Exception
      */
-    public String createVM(String image, int cpus, int ramMb, int diskGb) throws ConnClientException {
-        VMRequest vm = new VMRequest(image, cpus, ramMb, diskGb);
+    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) throws Exception {
+        VMRequest vm = new VMRequest(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
         
         JSONObject obj = new JSONObject(vms);
-        LOGGER.debug("Submitting vm creation ...");
+        LOGGER.debug("Submitting vm creation ... \n"+obj.toString());
         ClientResponse cr = resource.path("vms").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, obj.toString());
         if (cr.getStatus() == Status.OK.getStatusCode()) {
             String id = null;
@@ -104,7 +104,7 @@ public class VMMClient {
      * @throws Exception
      */
     public void deleteVM(String vmId) throws ConnClientException {
-        LOGGER.debug("Getting vm description ...");
+        LOGGER.debug("Getting vm destruction ...");
 
         ClientResponse cr = resource.path("vms").path(vmId).delete(ClientResponse.class);
         if (cr.getStatus() != Status.NO_CONTENT.getStatusCode()) {
