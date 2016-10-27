@@ -48,10 +48,10 @@ public class VMMClient {
      * @return the vmId
      * @throws Exception
      */
-    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) 
+    public String createVM(String image, int cpus, int ramMb, int diskGb, boolean needsFloatingIp) 
             throws ConnClientException {
         
-        VMRequest vm = new VMRequest(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
+        VMRequest vm = new VMRequest(image, cpus, ramMb, diskGb, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
         

@@ -31,7 +31,7 @@ public class VMMClientTest {
     @Test
     public void vmmClientTest() throws Exception {
         VMMClient client = new VMMClient("http://bscgrid28.bsc.es:34372/api/v1/");
-        String id = client.createVM("test_jorge","576c3c9a-f301-471a-9de5-a06e0e0e0960", 2, 2048, 10, "myApp",true);
+        String id = client.createVM("576c3c9a-f301-471a-9de5-a06e0e0e0960", 2, 2048, 10, true);
         assertNotNull(id);
         LOGGER.info("VM created with id: "+ id);
         VMDescription vmd = client.getVMDescription(id);
