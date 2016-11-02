@@ -226,7 +226,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private void addPortsToDocker(DockerInfo.Builder builder, List<Value.Range> ports) {
-        LinkedList<Integer> portsToAssign = new LinkedList<Integer>();
+        LinkedList<Integer> portsToAssign = new LinkedList<>();
         portsToAssign.add(new Integer(sshPort));
         for (int i = 0; i < openPorts - 1; i++) {
             portsToAssign.add((int) startingPort + i);

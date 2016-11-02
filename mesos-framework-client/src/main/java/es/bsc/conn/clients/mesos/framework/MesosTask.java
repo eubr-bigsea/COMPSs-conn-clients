@@ -32,7 +32,7 @@ public class MesosTask {
         this.id = id;
         this.state = state;
         this.requirements = requirements;
-        this.waitSems = new EnumMap<TaskState, Semaphore>(TaskState.class);
+        this.waitSems = new EnumMap<>(TaskState.class);
         this.retries = 0;
     }
 

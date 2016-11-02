@@ -25,7 +25,7 @@ public class MesosOffer {
         cpus = 0.0;
         mem = 0.0;
         disk = 0.0;
-        ports = new LinkedList<Range>();
+        ports = new LinkedList<>();
     }
 
     public MesosOffer(Offer offer) {
@@ -103,7 +103,7 @@ public class MesosOffer {
     }
 
     public List<Range> getMinPorts(int minPorts) {
-        List<Range> minPortsList = new LinkedList<Range>();
+        List<Range> minPortsList = new LinkedList<>();
         int addedPorts = 0;
         for (int i = 0; i < this.ports.size(); i++) {
             Range r = this.ports.get(i);

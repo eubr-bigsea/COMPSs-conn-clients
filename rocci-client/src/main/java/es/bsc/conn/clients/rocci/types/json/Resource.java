@@ -11,15 +11,15 @@ public class Resource {
     @Expose
     private String kind;
     @Expose
-    private List<String> mixins = new ArrayList<String>();
+    private List<String> mixins = new ArrayList<>();
     @Expose
-    private List<String> actions = new ArrayList<String>();
+    private List<String> actions = new ArrayList<>();
     @Expose
     private Attributes attributes;
     @Expose
     private String id;
     @Expose
-    private List<Link> links = new ArrayList<Link>();
+    private List<Link> links = new ArrayList<>();
 
     public String getKind() {
         return kind;

@@ -11,7 +11,7 @@ public class Link {
     @Expose
     private String kind;
     @Expose
-    private List<String> mixins = new ArrayList<String>();
+    private List<String> mixins = new ArrayList<>();
     @Expose
     private Attributes attributes;
     @Expose

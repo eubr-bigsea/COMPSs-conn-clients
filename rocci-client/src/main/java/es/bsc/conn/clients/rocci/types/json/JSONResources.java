@@ -8,7 +8,7 @@ import com.google.gson.annotations.Expose;
 public class JSONResources {
 
     @Expose
-    private List<Resource> resources = new ArrayList<Resource>();
+    private List<Resource> resources = new ArrayList<>();
 
 
     public List<Resource> getResources() {
