@@ -21,8 +21,16 @@ public class MesosFrameworkTest {
     private static final Logger logger = LogManager.getLogger("Console");
 
 
+    private Value.Range buildRange(long begin, long end) {
+        return Value.Range.newBuilder().setBegin(begin).setEnd(end).build();
+    }
+
     private Value.Scalar buildScalar(double value) {
         return Value.Scalar.newBuilder().setValue(value).build();
+    }
+
+    private Resource buildResource(String name, Value.Ranges ranges) {
+        return Resource.newBuilder().setName(name).setType(Value.Type.RANGES).setRanges(ranges).build();
     }
 
     private Resource buildResource(String name, double value) {
@@ -33,44 +41,56 @@ public class MesosFrameworkTest {
     public void testFramework() throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("Server", "localhost:5050");
+        properties.put("mesos-docker-image", "compss/compss:1.4.rc09");
+
+        String dockerImage = "compss/compss:1.4.rc09";
+        String appName = "test.Test";
 
         MesosFramework mf = new MesosFramework(properties);
 
         logger.info("FrameworkID " + mf.getId());
-        Thread.sleep(5_000);
-        
+        Thread.currentThread().sleep(5_000);
+
         // Create resources
+        Value.Ranges ports = Value.Ranges.newBuilder()
+                .addRange(buildRange(22L, 22L))
+                .addRange(buildRange(43000L, 43010L)).build();
+
         List<Resource> resources = new LinkedList<Resource>();
         resources.add(buildResource("cpus", 1.2));
         resources.add(buildResource("mem", 2048));
         resources.add(buildResource("disk", 4096));
+        resources.add(buildResource("ports", ports));
         List<Resource> resources2 = new LinkedList<Resource>();
         resources2.add(buildResource("cpus", 2.2));
         resources2.add(buildResource("mem", 3072));
         resources2.add(buildResource("disk", 8192));
+        resources2.add(buildResource("ports", ports));
 
         // Request workers information
-        String idWorker = mf.requestWorker(resources);
-        String idWorker2 = mf.requestWorker(resources);
-        String idWorker3 = mf.requestWorker(resources2);
+        String idWorker = mf.requestWorker(appName, dockerImage, resources);
+        String idWorker2 = mf.requestWorker(appName, dockerImage, resources);
+        String idWorker3 = mf.requestWorker(appName, dockerImage, resources2);
 
         String ip = mf.waitWorkerUntilRunning(idWorker);
         String ip2 = mf.waitWorkerUntilRunning(idWorker2);
-        String ip3 = mf.waitWorkerUntilRunning(idWorker3);
-        
+
         logger.debug("Worker1 IP: " + ip);
         logger.debug("Worker2 IP: " + ip2);
-        logger.debug("Worker3 IP: " + ip3);
-        
+
+        Thread.currentThread().sleep(10_000);
         // Remove workers
-        Thread.sleep(5_000);
-        
         mf.removeWorker(idWorker);
+
+        String ip3 = mf.waitWorkerUntilRunning(idWorker3);
+        logger.debug("Worker3 IP: " + ip3);
+
+        Thread.currentThread().sleep(10_000);
         mf.removeWorker(idWorker2);
         mf.removeWorker(idWorker3);
-        
-        // Stop 
-        Thread.sleep(20_000);
+
+        // Stop
+        Thread.currentThread().sleep(20_000);
 
         mf.stop();
     }

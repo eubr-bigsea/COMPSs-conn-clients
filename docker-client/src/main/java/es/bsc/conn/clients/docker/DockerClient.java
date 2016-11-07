@@ -41,7 +41,7 @@ public class DockerClient {
 
     /**
      * Builds a DockerClient out of a DockerClientConfig.
-     * 
+     *
      * @param config
      * @return
      */
@@ -117,7 +117,7 @@ public class DockerClient {
 
     /**
      * Starts a previously created container.
-     * 
+     *
      * @param containerId
      *            The id of the container to be started
      */
@@ -127,7 +127,7 @@ public class DockerClient {
 
     /**
      * Restarts a previously created container.
-     * 
+     *
      * @param containerId
      *            The id of the container to be restarted
      */
@@ -138,7 +138,7 @@ public class DockerClient {
     /**
      * Returns a data structure representing the inspect text that returns "docker inspect", of the container with id
      * containerId.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -148,7 +148,7 @@ public class DockerClient {
 
     /**
      * Returns a data structure representing the network settings of the container with id containerId.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -159,7 +159,7 @@ public class DockerClient {
     /**
      * Returns the RAM size in GB for the container with id containerId. Specifically, it returns the "Memory" field in
      * the docker inspect. IMPORTANT: this will be 0 if they aren't explicitly set by the user.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -173,7 +173,7 @@ public class DockerClient {
      * Returns the cpu shares for the container with id containerId. This is useful for Docker Swarm for example, where
      * cpu shares are the same as the number of processors used. IMPORTANT: this will be 0 if they aren't explicitly set
      * by the user.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -184,7 +184,7 @@ public class DockerClient {
     /**
      * Returns the disk size for the container with id containerId. IMPORTANT: this will be 0 if they aren't explicitly
      * set by the user.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -195,7 +195,7 @@ public class DockerClient {
 
     /**
      * Returns the ip of the container with id containerId.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -205,7 +205,7 @@ public class DockerClient {
 
     /**
      * Creates a new container in the host, BUT DOES NOT START IT.
-     * 
+     *
      * @param image
      *            The name of the image
      * @param containerName
@@ -241,7 +241,7 @@ public class DockerClient {
 
     /**
      * Creates a new container in the host, BUT DOES NOT START IT.
-     * 
+     *
      * @param image
      * @param containerName
      * @param exposedPorts
@@ -264,7 +264,7 @@ public class DockerClient {
 
     /**
      * Creates a container without opening ports.
-     * 
+     *
      * @param image
      * @param containerName
      * @param cmd
@@ -276,7 +276,7 @@ public class DockerClient {
 
     /**
      * Returns the first found container whose name is containerName.
-     * 
+     *
      * @param containerName
      * @return
      */
@@ -293,7 +293,7 @@ public class DockerClient {
 
     /**
      * Returns the container whose id is containerId. The id of a container is the long hash that Docker binds to it.
-     * 
+     *
      * @param containerId
      * @return
      */
@@ -309,7 +309,7 @@ public class DockerClient {
 
     /**
      * Stops a container
-     * 
+     *
      * @param containerId
      */
     public void stopContainer(String containerId) {
@@ -318,7 +318,7 @@ public class DockerClient {
 
     /**
      * Forces the removal of one container
-     * 
+     *
      * @param containerId
      */
     public void removeContainer(String containerId) {
@@ -329,7 +329,7 @@ public class DockerClient {
     /**
      * Returns the internal DockerClient, which has extended functionalities. This can save you if you want to do more
      * complex stuff but can't/don't want to change this DockerClient class. You're welcome :)
-     * 
+     *
      * @return
      */
     public com.github.dockerjava.api.DockerClient getInternalDockerClient() {

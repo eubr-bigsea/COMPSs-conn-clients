@@ -36,22 +36,12 @@ public class MesosFramework {
     private static final String MESOS_DEFAULT_PRINCIPAL = "mesos-default-principal";
     private static final String MESOS_DEFAULT_SECRET = "mesos-default-secret";
 
-    private static final String MESOS_DOCKER_IMAGE = "mesos-docker-image";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT = "mesos-framework-register-timeout";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS = "mesos-framework-register-timeout-units";
     private static final String MESOS_WORKER_WAIT_TIMEOUT = "mesos-worker-wait-timeout";
     private static final String MESOS_WORKER_WAIT_TIMEOUT_UNITS = "mesos-worker-wait-timeout-units";
     private static final String MESOS_WORKER_KILL_TIMEOUT = "mesos-worker-kill-timeout";
     private static final String MESOS_WORKER_KILL_TIMEOUT_UNITS = "mesos-worker-kill-timeout-units";
-    private static final String MESOS_WORKER_SSH_PORT = "mesos-worker-ssh-port";
-    private static final String MESOS_WORKER_STARTING_PORT = "mesos-worker-starting-port";
-    private static final String MESOS_WORKER_NUM_OPEN_PORTS = "mesos-worker-num-open-ports";
-
-    private static final String DEFAULT_DOCKER_IMAGE = "compss/compss:latest";
-
-    private static final String DEFAULT_WORKER_OPEN_PORTS = "10";
-    private static final String DEFAULT_WORKER_STARTING_PORT = "43100";
-    private static final String DEFAULT_WORKER_SSH_PORT = "22";
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MF);
 
@@ -66,7 +56,7 @@ public class MesosFramework {
 
     /**
      * Creates a new MesosFramework client with the given properties
-     * 
+     *
      * @param props
      * @throws FrameworkException
      */
@@ -88,13 +78,7 @@ public class MesosFramework {
         killWorkerTimeout = Long.parseLong(getProperty(props, MESOS_WORKER_KILL_TIMEOUT, DEFAULT_TIMEOUT));
         killWorkerTimeoutUnits = TimeUnit.valueOf(getProperty(props, MESOS_WORKER_KILL_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
 
-        int sshPortWorker = Integer.parseInt(getProperty(props, MESOS_WORKER_SSH_PORT, DEFAULT_WORKER_SSH_PORT));
-        int openPortsWorker = Integer.parseInt(getProperty(props, MESOS_WORKER_NUM_OPEN_PORTS, DEFAULT_WORKER_OPEN_PORTS));
-        long startingPortWorker = Long.parseLong(getProperty(props, MESOS_WORKER_STARTING_PORT, DEFAULT_WORKER_STARTING_PORT));
-
-        String mesosDockerImage = getProperty(props, MESOS_DOCKER_IMAGE, DEFAULT_DOCKER_IMAGE);
-
-        scheduler = new MesosFrameworkScheduler(mesosDockerImage, sshPortWorker, openPortsWorker, startingPortWorker);
+        scheduler = new MesosFrameworkScheduler();
 
         if (props.containsKey(MESOS_CHECKPOINT) && TRUE.equals(props.get(MESOS_CHECKPOINT))) {
             LOGGER.info("Enabling checkpoint for the framework");
@@ -131,16 +115,33 @@ public class MesosFramework {
         }
     }
 
+    /**
+     * @return Framework identifier returned by Mesos.
+     */
     public String getId() {
         LOGGER.info("Get framework ID");
         return scheduler.getFrameworkId();
     }
 
-    public String requestWorker(List<Resource> resources) {
+    /**
+     * Request a worker to be run on Mesos.
+     *
+     * @param appName
+     * @param imageName
+     * @param resources
+     * @return Identifier assigned to new worker
+     */
+    public String requestWorker(String appName, String imageName, List<Resource> resources) {
         LOGGER.info("Requested a worker");
-        return scheduler.requestWorker(driver, resources);
+        return scheduler.requestWorker(driver, appName, imageName, resources);
     }
 
+    /**
+     * Wait for worker with identifier id.
+     *
+     * @param  id Worker identifier.
+     * @return Worker IP address.
+     */
     public String waitWorkerUntilRunning(String id) {
         LOGGER.info("Waiting worker with id " + id);
         try {
@@ -152,6 +153,11 @@ public class MesosFramework {
         return scheduler.getTaskIp(id);
     }
 
+    /**
+     * Stop worker running/staging in Mesos.
+     *
+     * @param id
+     */
     public void removeWorker(String id) {
         LOGGER.info("Remove worker with id " + id);
         try {
@@ -162,6 +168,9 @@ public class MesosFramework {
         }
     }
 
+    /**
+     * Stop the Mesos Framework.
+     */
     public void stop() {
         LOGGER.info("Stoping Mesos Framework");
         driver.stop();

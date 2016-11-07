@@ -25,6 +25,8 @@ public class DockerClientTest {
 
     private static final String[] containerNames = { "testContainer1", "testContainer2", "testContainer3" };
 
+    private static final String CONNECTION = "unix:///var/run/docker.sock";
+
     private static DockerClient dc;
 
 
@@ -32,7 +34,7 @@ public class DockerClientTest {
      * Create the test. In this case, create the DockerClient
      */
     public DockerClientTest() {
-        DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost("tcp://localhost:2375")
+        DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(CONNECTION)
                 .withDockerTlsVerify(false).build();
 
         dc = DockerClient.build(config);

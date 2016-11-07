@@ -31,7 +31,6 @@
 	<!-- PROPERTIES -->
 	<properties>
 		<docker-java.version>3.0.3</docker-java.version>
-		<docker-java.version>3.0.3</docker-java.version>
 		<slf4j.version>1.7.5</slf4j.version>
 	</properties>
 
