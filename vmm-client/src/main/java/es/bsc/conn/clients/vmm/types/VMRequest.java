@@ -1,8 +1,13 @@
 package es.bsc.conn.clients.vmm.types;
 
+/**
+ * Represents a VM Request
+ * 
+ */
 public class VMRequest {
-	private final String name;
-	private final String image;
+
+    private final String name;
+    private final String image;
     private final int cpus;
     private final int ramMb;
     private final int diskGb;
@@ -11,14 +16,19 @@ public class VMRequest {
 
 
     /**
+     * Instantiate a new VM Request
+     * 
+     * @param name
      * @param image
      * @param cpus
      * @param ramMb
      * @param diskGb
+     * @param applicationId
+     * @param needsFloatingIp
      */
     public VMRequest(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) {
-    	this.name = name;
-    	this.image = image;
+        this.name = name;
+        this.image = image;
         this.cpus = cpus;
         this.ramMb = ramMb;
         this.diskGb = diskGb;
@@ -26,12 +36,13 @@ public class VMRequest {
         this.needsFloatingIp = needsFloatingIp;
     }
 
-    public boolean needsFloatingIp(){
-    	return needsFloatingIp;
-    }
-    
-    public boolean getNeedsFloatingIp(){
-    	return needsFloatingIp;
+    /**
+     * Returns if the VM needs a floating IP or not
+     * 
+     * @return
+     */
+    public boolean needsFloatingIp() {
+        return needsFloatingIp;
     }
 
     /**
@@ -40,14 +51,14 @@ public class VMRequest {
     public String getImage() {
         return image;
     }
-    
+
     /**
      * @return the name
      */
     public String getName() {
         return name;
     }
-    
+
     /**
      * @return the applicationId
      */

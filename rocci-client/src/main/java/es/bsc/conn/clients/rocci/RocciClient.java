@@ -16,19 +16,31 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-
+/**
+ * ROCCI Client version 4.2.5
+ *
+ */
 public class RocciClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.ROCCI);
 
+    private static final String JSON_RESOURCES_OPEN = "{\"resources\":";
+    private static final String JSON_RESOURCES_CLOSE = "}";
+    
     private final String cmdLine;
     private final String attributes;
 
 
-    public RocciClient(List<String> cmd_string, String attr) {
+    /**
+     * Instantiates a new ROCCI Client with a default CMD and the given attributes
+     * 
+     * @param cmd_string
+     * @param attr
+     */
+    public RocciClient(List<String> cmdString, String attr) {
         LOGGER.info("Initializing RocciClient");
         StringBuilder sb = new StringBuilder();
-        for (String s : cmd_string) {
+        for (String s : cmdString) {
             sb.append(s).append(" ");
         }
         
@@ -36,6 +48,13 @@ public class RocciClient {
         attributes = attr;
     }
 
+    /**
+     * Returns the description of the VM with id @resourceId
+     * 
+     * @param resourceId
+     * @return
+     * @throws ConnClientException
+     */
     public String describeResource(String resourceId) throws ConnClientException {
         String resDesc = "";
         String cmd = cmdLine + "--action describe" + " --resource " + resourceId;
@@ -50,11 +69,18 @@ public class RocciClient {
         return resDesc;
     }
 
+    /**
+     * Returns the status of the VM with id @resourceId
+     * 
+     * @param resourceId
+     * @return
+     * @throws ConnClientException
+     */
     public String getResourceStatus(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Status from Resource " + resourceId);
         String jsonOutput = describeResource(resourceId);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        jsonOutput = "{\"resources\":" + jsonOutput + "}";
+        jsonOutput = JSON_RESOURCES_OPEN + jsonOutput + JSON_RESOURCES_CLOSE;
 
         // Convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
@@ -63,6 +89,13 @@ public class RocciClient {
         return obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
     }
 
+    /**
+     * Returns the IP address of the VM with id @resourceId
+     * 
+     * @param resourceId
+     * @return
+     * @throws ConnClientException
+     */
     public String getResourceAddress(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Address from Resource " + resourceId);
         String resIP = null;
@@ -70,7 +103,7 @@ public class RocciClient {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        jsonOutput = "{\"resources\":" + jsonOutput + "}";
+        jsonOutput = JSON_RESOURCES_OPEN + jsonOutput + JSON_RESOURCES_CLOSE;
 
         // convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
@@ -84,12 +117,19 @@ public class RocciClient {
         return resIP;
     }
     
+    /**
+     * Returns the hardware description of the VM with id @resourceId
+     * 
+     * @param resourceId
+     * @return
+     * @throws ConnClientException
+     */
     public Object[] getHardwareDescription(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Hardware description from Resource " + resourceId);
         
         String jsonOutput = describeResource(resourceId);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        jsonOutput = "{\"resources\":" + jsonOutput + "}";
+        jsonOutput = JSON_RESOURCES_OPEN + jsonOutput + JSON_RESOURCES_CLOSE;
 
         // Convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
@@ -138,6 +178,11 @@ public class RocciClient {
         return new Object[] { memory, storage, cores, architecture, speed };
     }
 
+    /**
+     * Deletes the VM with id @resourceId
+     * 
+     * @param resourceId
+     */
     public void deleteCompute(String resourceId) {
         String cmd = cmdLine + "--action delete" + " --resource " + resourceId;
         try {
@@ -147,6 +192,13 @@ public class RocciClient {
         }
     }
 
+    /**
+     * Creates a new VM with the given @osTPL and @resourceTPL and returns its id
+     * 
+     * @param osTPL
+     * @param resourceTPL
+     * @return
+     */
     public String createCompute(String osTPL, String resourceTPL) {
         String s = "";
 

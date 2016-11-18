@@ -49,7 +49,7 @@ public class MesosFrameworkTest {
         MesosFramework mf = new MesosFramework(properties);
 
         logger.info("FrameworkID " + mf.getId());
-        Thread.currentThread().sleep(5_000);
+        Thread.sleep(5_000);
 
         // Create resources
         Value.Ranges ports = Value.Ranges.newBuilder()
@@ -78,19 +78,19 @@ public class MesosFrameworkTest {
         logger.debug("Worker1 IP: " + ip);
         logger.debug("Worker2 IP: " + ip2);
 
-        Thread.currentThread().sleep(10_000);
+        Thread.sleep(10_000);
         // Remove workers
         mf.removeWorker(idWorker);
 
         String ip3 = mf.waitWorkerUntilRunning(idWorker3);
         logger.debug("Worker3 IP: " + ip3);
 
-        Thread.currentThread().sleep(10_000);
+        Thread.sleep(10_000);
         mf.removeWorker(idWorker2);
         mf.removeWorker(idWorker3);
 
         // Stop
-        Thread.currentThread().sleep(20_000);
+        Thread.sleep(20_000);
 
         mf.stop();
     }

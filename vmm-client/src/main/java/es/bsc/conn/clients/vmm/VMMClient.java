@@ -19,19 +19,26 @@ import es.bsc.conn.clients.vmm.types.VMDescription;
 import es.bsc.conn.clients.vmm.types.VMRequest;
 import es.bsc.conn.clients.vmm.types.VMs;
 
-
+/**
+ * VMM Client implementation
+ * 
+ */
 public class VMMClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.VMM);
-    private static final int MIN_RAM= 512;
+    private static final String ERROR_INCORRECT_RETURN = "Incorrect return code: ";
+    
+    private static final int MIN_CPUS = 1;
+    private static final int MIN_RAM = 512;
     private static final int MIN_DISK = 1;
 
     private final Client client;
     private final WebResource resource;
 
-
     /**
      * Constructor
+     * 
+     * @param url
      */
     public VMMClient(String url) {
         super();
@@ -43,25 +50,26 @@ public class VMMClient {
     /**
      * Creates a VM with the given description
      * 
+     * @param name
      * @param image
      * @param cpus
      * @param ramMb
      * @param diskGb
-     * @return the vmId
-     * @throws Exception
+     * @param applicationId
+     * @param needsFloatingIp
+     * @return
+     * @throws ConnClientException
      */
     public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) 
             throws ConnClientException {
-        if (cpus < 1){
-        	cpus = 1;
-        }
-        if (ramMb < MIN_RAM){
-        	ramMb = MIN_RAM;
-        }
-        if (diskGb < MIN_DISK){
-        	diskGb = MIN_DISK;
-        }
-        VMRequest vm = new VMRequest(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
+        
+        // Check cpus, ram and disk parameters
+        int usableCPUs = (cpus >= MIN_CPUS) ? cpus : MIN_CPUS;
+        int usableRamMb = (ramMb >= MIN_RAM) ? ramMb : MIN_RAM;
+        int usableDiskGb = (diskGb >= MIN_DISK) ? diskGb : MIN_DISK;
+        
+        // Create request
+        VMRequest vm = new VMRequest(name, image, usableCPUs, usableRamMb, usableDiskGb, applicationId, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
         
@@ -81,8 +89,9 @@ public class VMMClient {
             LOGGER.debug("VM submitted with id " + id);
             return id;
         } else {
-            LOGGER.error("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
-            throw new ConnClientException("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
+            String msg = ERROR_INCORRECT_RETURN + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase();
+            LOGGER.error(msg);
+            throw new ConnClientException(msg);
         }
     }
 
@@ -105,8 +114,9 @@ public class VMMClient {
                 throw new ConnClientException(je);
             }
         } else {
-            LOGGER.error("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
-            throw new ConnClientException("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
+            String msg = ERROR_INCORRECT_RETURN + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase();
+            LOGGER.error(msg);
+            throw new ConnClientException(msg);
         }
     }
 
@@ -120,8 +130,9 @@ public class VMMClient {
 
         ClientResponse cr = resource.path("vms").path(vmId).delete(ClientResponse.class);
         if (cr.getStatus() != Status.NO_CONTENT.getStatusCode()) {
-            LOGGER.error("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
-            throw new ConnClientException("Incorrect return code: " + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase());
+            String msg = ERROR_INCORRECT_RETURN + cr.getStatus() + "." + cr.getClientResponseStatus().getReasonPhrase();
+            LOGGER.error(msg);
+            throw new ConnClientException(msg);
         }
     }
 

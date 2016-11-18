@@ -49,6 +49,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     private static final String WORKER_NAME = "Worker";
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MF_SCHEDULER);
+    private static final String ERROR_TASK_ID = "ERROR: Task does not exist. TaskId = ";
 
     private final AtomicInteger taskIdGenerator = new AtomicInteger();
 
@@ -60,7 +61,8 @@ public class MesosFrameworkScheduler implements Scheduler {
     private final List<String> pendingTasks;
     private final Map<String, MesosTask> tasks;
 
-    private String dockerImage;
+    // TODO: No need to specify docker image?
+    //private String dockerImage;
 
     /**
      * Creates a new Mesos Framework scheduler.
@@ -123,7 +125,7 @@ public class MesosFrameworkScheduler implements Scheduler {
         Semaphore sem = new Semaphore(0);
         synchronized (tasks) {
             if (!tasks.containsKey(id)) {
-                throw new FrameworkException("Task with id " + id + " does not exist");
+                throw new FrameworkException(ERROR_TASK_ID + id);
             } else if (tasks.get(id).getState() == state) {
                 // Task already in that state, nothing to do
                 return;
@@ -134,7 +136,7 @@ public class MesosFrameworkScheduler implements Scheduler {
         boolean acquired = acquireSem(sem, timeout, unit);
         synchronized (tasks) {
             if (!tasks.containsKey(id)) {
-                throw new FrameworkException("Task with id " + id + " does not exist");
+                throw new FrameworkException(ERROR_TASK_ID + id);
             } else if (tasks.get(id).getState() != state || !acquired) {
                 pendingTasks.remove(id);
                 runningTasks.remove(id);
@@ -196,7 +198,7 @@ public class MesosFrameworkScheduler implements Scheduler {
                 return;
             } else if (!tasks.containsKey(id)) {
                 runningTasks.remove(id);
-                throw new FrameworkException("Task with id " + id + " does not exist");
+                throw new FrameworkException(ERROR_TASK_ID + id);
             }
         }
         driver.killTask(TaskID.newBuilder().setValue(id).build());

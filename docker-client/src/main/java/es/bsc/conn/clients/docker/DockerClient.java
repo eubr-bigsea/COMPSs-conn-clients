@@ -165,8 +165,7 @@ public class DockerClient {
      */
     public int getMemoryGB(String containerId) {
         Long mem = inspectContainer(containerId).getHostConfig().getMemory();
-        int memGB = (int) (mem / BYTES_IN_ONE_GB);
-        return memGB;
+        return (int) (mem / BYTES_IN_ONE_GB);
     }
 
     /**

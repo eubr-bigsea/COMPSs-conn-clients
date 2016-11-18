@@ -3,7 +3,10 @@ package es.bsc.conn.clients.vmm.types;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
+/**
+ * Description of a VM
+ *
+ */
 public class VMDescription extends VMRequest {
 
     private final String id;
@@ -11,15 +14,24 @@ public class VMDescription extends VMRequest {
     private final String ipAddress;
     private final String hostName;
 
-
     /**
+     * Instantiate a new VM Description
+     * 
+     * @param id
+     * @param name
      * @param image
      * @param cpus
      * @param ramMb
      * @param diskGb
+     * @param applicationId
+     * @param needsFloatingIp
+     * @param state
+     * @param ipAddress
+     * @param hostName
+     * @param dateCreated
      */
-    public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp, String state, 
-            String ipAddress, String hostName, String dateCreated) {
+    public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, 
+            boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
         
         super(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
 
