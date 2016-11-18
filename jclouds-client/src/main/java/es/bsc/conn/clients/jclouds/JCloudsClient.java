@@ -47,7 +47,10 @@ import com.google.inject.Module;
 import es.bsc.conn.clients.exceptions.ConnClientException;
 import es.bsc.conn.clients.loggers.Loggers;
 
-
+/**
+ * Implementation of JClouds Client
+ * 
+ */
 public class JCloudsClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.JCLOUDS);

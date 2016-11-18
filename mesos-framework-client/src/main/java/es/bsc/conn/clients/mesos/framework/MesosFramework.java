@@ -14,7 +14,10 @@ import org.apache.mesos.Protos.FrameworkInfo;
 import org.apache.mesos.Protos.Resource;
 import org.apache.mesos.Protos.TaskState;
 
-
+/**
+ * Representation of a Mesos Framework client
+ *
+ */
 public class MesosFramework {
 
     private static final int FAILOVER_TIMEOUT = 120_000;

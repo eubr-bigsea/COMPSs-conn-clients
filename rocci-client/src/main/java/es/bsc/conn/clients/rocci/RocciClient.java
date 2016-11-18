@@ -34,7 +34,7 @@ public class RocciClient {
     /**
      * Instantiates a new ROCCI Client with a default CMD and the given attributes
      * 
-     * @param cmd_string
+     * @param cmdString
      * @param attr
      */
     public RocciClient(List<String> cmdString, String attr) {

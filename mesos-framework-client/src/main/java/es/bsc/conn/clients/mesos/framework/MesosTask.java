@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.EnumMap;
 
-
+/**
+ * Implementation of a Mesos Task
+ *
+ */
 public class MesosTask {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MESOS_TASK);

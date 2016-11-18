@@ -7,7 +7,10 @@ import org.apache.mesos.Protos.Offer;
 import java.util.List;
 import java.util.LinkedList;
 
-
+/**
+ * Implementation of a Mesos Offer
+ * 
+ */
 public class MesosOffer {
 
     // Constants

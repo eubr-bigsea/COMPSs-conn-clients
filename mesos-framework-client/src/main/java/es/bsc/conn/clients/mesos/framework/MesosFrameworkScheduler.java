@@ -33,7 +33,10 @@ import org.apache.mesos.Protos.Value;
 import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
 
-
+/**
+ * Implementation of the Mesos Framework Scheduler
+ *
+ */
 public class MesosFrameworkScheduler implements Scheduler {
 
     private static final String EMPTY = "";
@@ -61,9 +64,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     private final List<String> pendingTasks;
     private final Map<String, MesosTask> tasks;
 
-    // TODO: No need to specify docker image?
-    //private String dockerImage;
-
+    
     /**
      * Creates a new Mesos Framework scheduler.
      */
