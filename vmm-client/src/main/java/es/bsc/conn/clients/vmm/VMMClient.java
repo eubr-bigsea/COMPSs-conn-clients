@@ -23,6 +23,8 @@ import es.bsc.conn.clients.vmm.types.VMs;
 public class VMMClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.VMM);
+    private static final int MIN_RAM= 512;
+    private static final int MIN_DISK = 1;
 
     private final Client client;
     private final WebResource resource;
@@ -48,10 +50,18 @@ public class VMMClient {
      * @return the vmId
      * @throws Exception
      */
-    public String createVM(String image, int cpus, int ramMb, int diskGb, boolean needsFloatingIp) 
+    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) 
             throws ConnClientException {
-        
-        VMRequest vm = new VMRequest(image, cpus, ramMb, diskGb, needsFloatingIp);
+        if (cpus < 1){
+        	cpus = 1;
+        }
+        if (ramMb < MIN_RAM){
+        	ramMb = MIN_RAM;
+        }
+        if (diskGb < MIN_DISK){
+        	diskGb = MIN_DISK;
+        }
+        VMRequest vm = new VMRequest(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
         

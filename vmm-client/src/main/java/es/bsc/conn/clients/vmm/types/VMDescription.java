@@ -18,10 +18,10 @@ public class VMDescription extends VMRequest {
      * @param ramMb
      * @param diskGb
      */
-    public VMDescription(String id, String image, int cpus, int ramMb, int diskGb, boolean needsFloatingIp, String state, 
+    public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp, String state, 
             String ipAddress, String hostName, String dateCreated) {
         
-        super(image, cpus, ramMb, diskGb, needsFloatingIp);
+        super(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
 
         this.id = id;
         this.state = state;
@@ -35,10 +35,12 @@ public class VMDescription extends VMRequest {
      * @throws JSONException
      */
     public VMDescription(JSONObject jsonObject) throws JSONException {
-        super((String) jsonObject.get("image"), 
+        super((String) jsonObject.get("name"),
+        		(String) jsonObject.get("image"), 
                 (int) jsonObject.get("cpus"), 
                 (int) jsonObject.get("ramMb"),
-                (int) jsonObject.get("diskGb"), 
+                (int) jsonObject.get("diskGb"),
+                (String) jsonObject.get("applicationId"),
                 (boolean)jsonObject.get("needsFloatingIp"));
 
         this.id = (String) jsonObject.get("id");
