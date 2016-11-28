@@ -31,17 +31,12 @@
 		<junit.version>4.12</junit.version>
 
 		<!-- Log4j version -->
-		<log4j.version>2.6.1</log4j.version>
-
-		<!-- Apache commons versions -->
-		<apache-commons-configuration.version>1.10</apache-commons-configuration.version>
-		<apache-commons-lang3.version>3.4</apache-commons-lang3.version>
-		<apache-commons-collections4.version>4.1</apache-commons-collections4.version>
+		<log4j.version>2.7</log4j.version>
 
 		<!-- Maven Plugins -->
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
 		<maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
 		<maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
@@ -125,23 +120,6 @@
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
 				<version>${log4j.version}</version>
-			</dependency>
-
-			<!-- Apache Commons -->
-			<dependency>
-				<groupId>commons-configuration</groupId>
-				<artifactId>commons-configuration</artifactId>
-				<version>${apache-commons-configuration.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>${apache-commons-lang3.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-collections4</artifactId>
-				<version>${apache-commons-collections4.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
