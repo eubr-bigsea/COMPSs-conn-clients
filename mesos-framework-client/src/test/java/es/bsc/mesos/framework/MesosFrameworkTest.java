@@ -40,10 +40,11 @@ public class MesosFrameworkTest {
     @Test
     public void testFramework() throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put("Server", "localhost:5050");
-        properties.put("mesos-docker-image", "compss/compss:1.4.rc09");
+        // properties.put("Server", "localhost:5050");
+        properties.put("Server", "zk://192.168.99.100:2181/mesos");
+        properties.put("mesos-docker-network", "compss-net");
 
-        String dockerImage = "compss/compss:1.4.rc09";
+        String dockerImage = "compss/compss:2.0";
         String appName = "test.Test";
 
         MesosFramework mf = new MesosFramework(properties);
@@ -54,17 +55,17 @@ public class MesosFrameworkTest {
         // Create resources
         Value.Ranges ports = Value.Ranges.newBuilder()
                 .addRange(buildRange(22L, 22L))
-                .addRange(buildRange(43000L, 43010L)).build();
+                .addRange(buildRange(43000L, 43005L)).build();
 
         List<Resource> resources = new LinkedList<Resource>();
-        resources.add(buildResource("cpus", 1.2));
-        resources.add(buildResource("mem", 2048));
-        resources.add(buildResource("disk", 4096));
+        resources.add(buildResource("cpus", 0.8));
+        resources.add(buildResource("mem", 256));
+        resources.add(buildResource("disk", 256));
         resources.add(buildResource("ports", ports));
         List<Resource> resources2 = new LinkedList<Resource>();
-        resources2.add(buildResource("cpus", 2.2));
-        resources2.add(buildResource("mem", 3072));
-        resources2.add(buildResource("disk", 8192));
+        resources2.add(buildResource("cpus", 0.6));
+        resources2.add(buildResource("mem", 380));
+        resources2.add(buildResource("disk", 256));
         resources2.add(buildResource("ports", ports));
 
         // Request workers information

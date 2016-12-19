@@ -30,7 +30,7 @@
 
 	<!-- PROPERTIES -->
 	<properties>
-		<mesos.version>0.28.2</mesos.version>
+		<mesos.version>1.1.0</mesos.version>
 	</properties>
 
 	<!-- DEPENDENCIES -->

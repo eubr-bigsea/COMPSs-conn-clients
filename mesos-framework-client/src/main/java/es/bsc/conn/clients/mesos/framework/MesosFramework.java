@@ -38,7 +38,9 @@ public class MesosFramework {
     private static final String MESOS_AUTHENTICATE = "mesos-authenticate";
     private static final String MESOS_DEFAULT_PRINCIPAL = "mesos-default-principal";
     private static final String MESOS_DEFAULT_SECRET = "mesos-default-secret";
+    private static final String MESOS_DOCKER_NETWORK = "mesos-docker-network";
 
+    private static final String MESOS_FRAMEWORK_HOSTNAME = "mesos-framework-hostname";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT = "mesos-framework-register-timeout";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS = "mesos-framework-register-timeout-units";
     private static final String MESOS_WORKER_WAIT_TIMEOUT = "mesos-worker-wait-timeout";
@@ -86,6 +88,14 @@ public class MesosFramework {
         if (props.containsKey(MESOS_CHECKPOINT) && TRUE.equals(props.get(MESOS_CHECKPOINT))) {
             LOGGER.info("Enabling checkpoint for the framework");
             frameworkBuilder.setCheckpoint(true);
+        }
+        if (props.containsKey(MESOS_FRAMEWORK_HOSTNAME)) {
+            LOGGER.info("Setting hostname for the framework: " + props.get(MESOS_FRAMEWORK_HOSTNAME));
+            frameworkBuilder.setHostname(MESOS_FRAMEWORK_HOSTNAME);
+        }
+        if (props.containsKey(MESOS_DOCKER_NETWORK)) {
+            LOGGER.info("Using custom network for Docker: " + props.get(MESOS_DOCKER_NETWORK));
+            scheduler.useDockerNetwork(props.get(MESOS_DOCKER_NETWORK));
         }
         if (props.containsKey(MESOS_AUTHENTICATE) && TRUE.equals(props.get(MESOS_AUTHENTICATE))) {
             LOGGER.info("Enabling authentication for the framework");

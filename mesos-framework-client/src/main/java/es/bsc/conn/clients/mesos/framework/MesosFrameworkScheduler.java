@@ -33,10 +33,9 @@ import org.apache.mesos.Protos.Value;
 import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
 
-/**
- * Implementation of the Mesos Framework Scheduler
- *
- */
+import org.apache.mesos.Protos.Labels;
+import org.apache.mesos.Protos.Label;
+
 public class MesosFrameworkScheduler implements Scheduler {
 
     private static final String EMPTY = "";
@@ -64,7 +63,11 @@ public class MesosFrameworkScheduler implements Scheduler {
     private final List<String> pendingTasks;
     private final Map<String, MesosTask> tasks;
 
-    
+    private String dockerImage;
+    private DockerInfo.Network dockerNetworkType = DockerInfo.Network.BRIDGE;
+    private String dockerNetworkName = "";
+    private boolean useCustomDockerNetwork = false;
+
     /**
      * Creates a new Mesos Framework scheduler.
      */
@@ -80,6 +83,15 @@ public class MesosFrameworkScheduler implements Scheduler {
      */
     public String getFrameworkId() {
         return frameworkId == null? EMPTY: frameworkId.getValue();
+    }
+
+    /**
+     * @param networkName Name of the network to use with Docker
+     */
+    public void useDockerNetwork(String networkName) {
+        useCustomDockerNetwork = true;
+        dockerNetworkType = DockerInfo.Network.USER;
+        dockerNetworkName = networkName;
     }
 
     /**
@@ -508,7 +520,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     private DockerInfo getDockerInfo(String imageName, List<Value.Range> containerPorts, List<Value.Range> hostPorts) {
-        DockerInfo.Builder dockerInfoBuilder = DockerInfo.newBuilder().setImage(imageName).setNetwork(DockerInfo.Network.BRIDGE);
+        DockerInfo.Builder dockerInfoBuilder = DockerInfo.newBuilder().setImage(imageName).setNetwork(dockerNetworkType);
         addPortsToDocker(dockerInfoBuilder, containerPorts, hostPorts);
         return dockerInfoBuilder.build();
     }
@@ -551,6 +563,9 @@ public class MesosFrameworkScheduler implements Scheduler {
 
         // Container info
         ContainerInfo.Builder containerInfoBuilder = ContainerInfo.newBuilder();
+        if (useCustomDockerNetwork) {
+            containerInfoBuilder.addNetworkInfos(NetworkInfo.newBuilder().setName(dockerNetworkName).build());
+        }
         containerInfoBuilder.setType(ContainerInfo.Type.DOCKER);
         containerInfoBuilder.setDocker(getDockerInfo(imageName, reqs.getPortsList(), pickedPorts));
 
