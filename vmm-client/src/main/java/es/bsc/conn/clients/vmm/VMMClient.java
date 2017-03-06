@@ -60,7 +60,7 @@ public class VMMClient {
      * @return
      * @throws ConnClientException
      */
-    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, boolean needsFloatingIp) 
+    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost, boolean needsFloatingIp) 
             throws ConnClientException {
         
         // Check cpus, ram and disk parameters
@@ -69,7 +69,7 @@ public class VMMClient {
         int usableDiskGb = (diskGb >= MIN_DISK) ? diskGb : MIN_DISK;
         
         // Create request
-        VMRequest vm = new VMRequest(name, image, usableCPUs, usableRamMb, usableDiskGb, applicationId, needsFloatingIp);
+        VMRequest vm = new VMRequest(name, image, usableCPUs, usableRamMb, usableDiskGb, applicationId, preferredHost, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
         

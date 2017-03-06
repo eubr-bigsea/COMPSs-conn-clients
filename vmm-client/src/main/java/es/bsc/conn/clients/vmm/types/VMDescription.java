@@ -31,9 +31,9 @@ public class VMDescription extends VMRequest {
      * @param dateCreated
      */
     public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, 
-            boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
+            String preferredHost, boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
         
-        super(name, image, cpus, ramMb, diskGb, applicationId, needsFloatingIp);
+        super(name, image, cpus, ramMb, diskGb, applicationId, preferredHost, needsFloatingIp);
 
         this.id = id;
         this.state = state;
@@ -52,7 +52,7 @@ public class VMDescription extends VMRequest {
                 (int) jsonObject.get("cpus"), 
                 (int) jsonObject.get("ramMb"),
                 (int) jsonObject.get("diskGb"),
-                (String) jsonObject.get("applicationId"),
+                (String) jsonObject.get("applicationId"),"",
                 (boolean)jsonObject.get("needsFloatingIp"));
 
         this.id = (String) jsonObject.get("id");
