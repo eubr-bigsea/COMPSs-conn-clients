@@ -26,14 +26,14 @@ public class RocciClient {
 
     private static final String JSON_RESOURCES_OPEN = "{\"resources\":";
     private static final String JSON_RESOURCES_CLOSE = "}";
-    
+
     private final String cmdLine;
     private final String attributes;
 
 
     /**
      * Instantiates a new ROCCI Client with a default CMD and the given attributes
-     * 
+     *
      * @param cmdString
      * @param attr
      */
@@ -43,14 +43,14 @@ public class RocciClient {
         for (String s : cmdString) {
             sb.append(s).append(" ");
         }
-        
+
         cmdLine = sb.toString();
         attributes = attr;
     }
 
     /**
      * Returns the description of the VM with id @resourceId
-     * 
+     *
      * @param resourceId
      * @return
      * @throws ConnClientException
@@ -71,7 +71,7 @@ public class RocciClient {
 
     /**
      * Returns the status of the VM with id @resourceId
-     * 
+     *
      * @param resourceId
      * @return
      * @throws ConnClientException
@@ -84,14 +84,14 @@ public class RocciClient {
 
         // Convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
-        
+
         // Get state
         return obj.getResources().get(0).getAttributes().getOcci().getCompute().getState();
     }
 
     /**
      * Returns the IP address of the VM with id @resourceId
-     * 
+     *
      * @param resourceId
      * @return
      * @throws ConnClientException
@@ -116,37 +116,37 @@ public class RocciClient {
         }
         return resIP;
     }
-    
+
     /**
      * Returns the hardware description of the VM with id @resourceId
-     * 
+     *
      * @param resourceId
      * @return
      * @throws ConnClientException
      */
     public Object[] getHardwareDescription(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Hardware description from Resource " + resourceId);
-        
+
         String jsonOutput = describeResource(resourceId);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         jsonOutput = JSON_RESOURCES_OPEN + jsonOutput + JSON_RESOURCES_CLOSE;
 
         // Convert the json string back to object
         JSONResources obj = gson.fromJson(jsonOutput, JSONResources.class);
-        
+
         // Retrieve hardware information
         // Memory
-        Float memory = null; 
+        Float memory = null;
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
             if (obj.getResources().get(0).getAttributes().getOcci().getCompute().getMemory() != null) {
                 memory = obj.getResources().get(0).getAttributes().getOcci().getCompute().getMemory();
                 break;
             }
         }
-        
+
         // Storage
         Float storage = null;
-        
+
         // Cores
         Integer cores = null;
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
@@ -155,7 +155,7 @@ public class RocciClient {
                 break;
             }
         }
-        
+
         // Architecture
         String architecture = null;
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
@@ -164,7 +164,7 @@ public class RocciClient {
                 break;
             }
         }
-        
+
         // Speed
         Float speed = null;
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); ++i) {
@@ -180,7 +180,7 @@ public class RocciClient {
 
     /**
      * Deletes the VM with id @resourceId
-     * 
+     *
      * @param resourceId
      */
     public void deleteCompute(String resourceId) {
@@ -194,7 +194,7 @@ public class RocciClient {
 
     /**
      * Creates a new VM with the given @osTPL and @resourceTPL and returns its id
-     * 
+     *
      * @param osTPL
      * @param resourceTPL
      * @return
@@ -213,6 +213,16 @@ public class RocciClient {
         }
 
         return s;
+    }
+
+
+    public void attachLink(String resourceId, String link){
+        String cmd = cmdLine + "--resource " + resourceId + " --action link --link " + link;
+        try {
+            executeCmd(cmd);
+        } catch (ConnClientException e) {
+            LOGGER.error("Cannot attach link " + link + " to resource with id " + resourceId, e);
+        }
     }
 
     private String executeCmd(String cmdArgs) throws ConnClientException {
@@ -240,10 +250,10 @@ public class RocciClient {
             }
 
             p.waitFor();
-            
+
             LOGGER.info("Excute CMD exitValue: " + p.exitValue());
             LOGGER.info("__________________________________________");
-            
+
             return cmdResult.toString();
         } catch (IOException | InterruptedException e) {
             throw new ConnClientException(e);
