@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +25,8 @@ public class SlurmClient {
     private static final String EXPECTED_RESULT = "Submitted batch job ";
     private final String mainJobId, masterId;
     private HashMap<String,String> nodeToJobId = new HashMap();
-    private HashMap<String,List<String>> jobIdToNodes = new HashMap(); 
+    private HashMap<String,List<String>> jobIdToNodes = new HashMap();
+    private final int initialNodes;
 
 
     /**
@@ -33,10 +35,12 @@ public class SlurmClient {
      * @param cmdString
      * @param attr
      */
-    public SlurmClient(List<String> nodeIds, String masterId) {
+    public SlurmClient(String masterId) {
         LOGGER.info("Initializing SLURM Client");
+        List<String> nodeIds = parseNodes();
+        this.initialNodes = nodeIds.size();
         this.masterId = masterId;
-        mainJobId = System.getenv("SLURM_JOB_ID");
+        this.mainJobId = System.getenv("SLURM_JOB_ID");
         if (mainJobId!=null && nodeIds != null && !nodeIds.isEmpty()){
         	jobIdToNodes.put(mainJobId, nodeIds);
         	for (String nodeId: nodeIds){
@@ -46,9 +50,25 @@ public class SlurmClient {
         	LOGGER.error("ERROR no SLURM_JOB_ID defined SLURM client will not work");
         }
     }
+    
+    /**
+	 * @return the initialNodes
+	 */
+	public int getInitialNodes() {
+		return initialNodes;
+	}
+
+	private List<String> parseNodes() {
+		String slurmNL = System.getenv("SLURM_JOB_NODELIST");
+		LinkedList<String> list = new LinkedList<String>();
+		if (slurmNL!=null){
+			JobDescription.parseNodelist(slurmNL, list);
+		}
+		return list;
+	}
 
     /**
-     * Returns the description of the VM with id @resourceId
+     * Returns the description of the Job with id @resourceId
      *
      * @param resourceId
      * @return
@@ -78,7 +98,17 @@ public class SlurmClient {
         
     }
 
-   
+    public void cancelJob(String jobId) throws ConnClientException {
+        String cmd = "scancel " + jobId;
+        try {
+            LOGGER.debug("Describe CMD: " + cmd);
+            executeCmd(cmd);
+        } catch (ConnClientException ie) {
+            LOGGER.error("Error on Describe CMD", ie);
+            throw new ConnClientException(ie);
+        }
+        
+    }
 
     
 
