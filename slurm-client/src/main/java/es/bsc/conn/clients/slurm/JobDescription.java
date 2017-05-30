@@ -29,20 +29,24 @@ public class JobDescription {
 			jobProperties = new HashMap<String, String>(pars.length);
 			for (String par: pars){
 				int eqIndex = par.indexOf("=");
-				String key = par.substring(0, eqIndex);
-				String value = par.substring(eqIndex+1);
-				LOGGER.debug("Evaluating key: "+ key+", value:"+ value);
-				if (key.equals(TRES)){
-					LOGGER.debug("Parsing TRES: "+ value);
-					parseTREC(value);
-				}else if (key.equals("NodeList")){
-					LOGGER.debug("Parsing node list: "+ value);
-					parseNodelist(value, nodeList);
-				}else{
-					if (value.equals(NULL)){
-						value="";
+				if (eqIndex >= 0){
+					String key = par.substring(0, eqIndex);
+					String value = par.substring(eqIndex+1);
+					LOGGER.debug("Evaluating key: "+ key+", value:"+ value);
+					if (key.equals(TRES)){
+						LOGGER.debug("Parsing TRES: "+ value);
+						parseTREC(value);
+					}else if (key.equals("NodeList")){
+						LOGGER.debug("Parsing node list: "+ value);
+						parseNodelist(value, nodeList);
+					}else{
+						if (value.equals(NULL)){
+							value="";
+						}
+						jobProperties.put(key, value);
 					}
-					jobProperties.put(key, value);
+				}else{
+					LOGGER.debug("parameter " + par + " is not following the key=value. Skipping...");
 				}
 			}
 		}
