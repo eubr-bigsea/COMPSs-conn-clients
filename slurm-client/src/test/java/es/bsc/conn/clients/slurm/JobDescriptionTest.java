@@ -30,6 +30,7 @@ public class JobDescriptionTest {
 			+ "Licenses=(null) Network=(null) Command=(null) "
 			+ "WorkDir=/gpfs/home/bsc19/bsc19611 Power= SICP=0";
 	
+	
 	private static final String[] nodes = new String[]{"nva59","nva60","nvb10","nvb13","nvb14", "nvb15"};
 	private static final String request = "-N3 --cpus_per_task=2 -n4 --mem=8000 --gres=gpu:1";
 	@Before
@@ -75,5 +76,64 @@ public class JobDescriptionTest {
 		assertEquals(jobDesc.getProperty("Gres"),"gpu:1");
 		
 	}
+	@Test
+	public void testParseNodeList1() {
+		String nodeListStr = "nvb[3,8-9]";
+		HashSet<String> ns = new HashSet<String>();
+		ns.add("nvb3");
+		ns.add("nvb8");
+		ns.add("nvb9");
+		List<String> nodeList = new LinkedList<String>();
+		JobDescription.parseNodelist(nodeListStr, nodeList);
+		for (String assignedNode: nodeList){
+			assertTrue(ns.contains(assignedNode));
+		}
+		
+	}
+	@Test
+	public void testParseNodeList2() {
+		String nodeListStr = "nvb[8-9]";
+		HashSet<String> ns = new HashSet<String>();
+		ns.add("nvb8");
+		ns.add("nvb9");
+		List<String> nodeList = new LinkedList<String>();
+		JobDescription.parseNodelist(nodeListStr, nodeList);
+		for (String assignedNode: nodeList){
+			assertTrue(ns.contains(assignedNode));
+		}
+		
+	}
+	
+	@Test
+	public void testParseNodeList3() {
+		String nodeListStr = "nvb[3,5]";
+		HashSet<String> ns = new HashSet<String>();
+		ns.add("nvb3");
+		ns.add("nvb5");
+		List<String> nodeList = new LinkedList<String>();
+		JobDescription.parseNodelist(nodeListStr, nodeList);
+		for (String assignedNode: nodeList){
+			assertTrue(ns.contains(assignedNode));
+		}
+		
+	}
+	
+	@Test
+	public void testParseNodeList4() {
+		String nodeListStr = "nvb[3-5,7]";
+		HashSet<String> ns = new HashSet<String>();
+		ns.add("nvb3");
+		ns.add("nvb4");
+		ns.add("nvb5");
+		ns.add("nvb7");
+		List<String> nodeList = new LinkedList<String>();
+		JobDescription.parseNodelist(nodeListStr, nodeList);
+		for (String assignedNode: nodeList){
+			assertTrue(ns.contains(assignedNode));
+		}
+		
+	}
+	
+	
 
 }

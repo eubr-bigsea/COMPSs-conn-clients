@@ -70,7 +70,7 @@ public class JobDescription {
 			}else{
 				//Comma before or after brackets or not brackets
 				nodeGroup= value.substring(startPosition, nextComma);
-				startPosition =nextComma+1;
+				startPosition = nextComma+1;
 			}
 			LOGGER.debug("Evaluating nodeGroup: "+nodeGroup);
 			if (nodeGroup!=null && !nodeGroup.isEmpty()){
@@ -84,12 +84,14 @@ public class JobDescription {
 			nextEndBrack = value.indexOf(startPosition, ']');
 			nextComma = value.indexOf(startPosition, ',');
 		}
-		nodeGroup= value.substring(startPosition);
-		if (nodeGroup.contains("[")){
-			manageNodeGroup(nodeGroup, nodeList2);
-		}else{
-			
-			nodeList2.add(nodeGroup);
+		//Check if there another node to group at the end
+		if (startPosition > 0 && startPosition < value.length()){
+			nodeGroup= value.substring(startPosition);
+			if (nodeGroup.contains("[")){
+				manageNodeGroup(nodeGroup, nodeList2);
+			}else{
+				nodeList2.add(nodeGroup);
+			}
 		}
 	}
 
