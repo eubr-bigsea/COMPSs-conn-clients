@@ -76,6 +76,20 @@ public class JobDescriptionTest {
 		assertEquals(jobDesc.getProperty("Gres"),"gpu:1");
 		
 	}
+	
+	@Test
+	public void testParseNodeList0() {
+		String nodeListStr = "nvb22";
+		HashSet<String> ns = new HashSet<String>();
+		ns.add("nvb22");
+		List<String> nodeList = new LinkedList<String>();
+		JobDescription.parseNodelist(nodeListStr, nodeList);
+		assertEquals(ns.size(),nodeList.size());
+		for (String assignedNode: nodeList){
+			assertTrue(ns.contains(assignedNode));
+		}
+		
+	}
 	@Test
 	public void testParseNodeList1() {
 		String nodeListStr = "nvb[3,8-9]";
@@ -85,6 +99,7 @@ public class JobDescriptionTest {
 		ns.add("nvb9");
 		List<String> nodeList = new LinkedList<String>();
 		JobDescription.parseNodelist(nodeListStr, nodeList);
+		assertEquals(ns.size(),nodeList.size());
 		for (String assignedNode: nodeList){
 			assertTrue(ns.contains(assignedNode));
 		}
@@ -98,6 +113,7 @@ public class JobDescriptionTest {
 		ns.add("nvb9");
 		List<String> nodeList = new LinkedList<String>();
 		JobDescription.parseNodelist(nodeListStr, nodeList);
+		assertEquals(ns.size(),nodeList.size());
 		for (String assignedNode: nodeList){
 			assertTrue(ns.contains(assignedNode));
 		}
@@ -112,6 +128,7 @@ public class JobDescriptionTest {
 		ns.add("nvb5");
 		List<String> nodeList = new LinkedList<String>();
 		JobDescription.parseNodelist(nodeListStr, nodeList);
+		assertEquals(ns.size(),nodeList.size());
 		for (String assignedNode: nodeList){
 			assertTrue(ns.contains(assignedNode));
 		}
@@ -128,6 +145,7 @@ public class JobDescriptionTest {
 		ns.add("nvb7");
 		List<String> nodeList = new LinkedList<String>();
 		JobDescription.parseNodelist(nodeListStr, nodeList);
+		assertEquals(ns.size(),nodeList.size());
 		for (String assignedNode: nodeList){
 			assertTrue(ns.contains(assignedNode));
 		}

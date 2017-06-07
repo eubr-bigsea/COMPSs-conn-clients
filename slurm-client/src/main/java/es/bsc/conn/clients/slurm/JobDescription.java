@@ -61,7 +61,7 @@ public class JobDescription {
 		int nextStBrack = value.indexOf('[');
 		int nextEndBrack = value.indexOf(']');
 		int nextComma = value.indexOf(',');
-		String nodeGroup;
+		String nodeGroup = value;
 		while (nextComma >0){
 			if (nextStBrack>0 && nextEndBrack>0 && nextComma>nextStBrack && nextComma>nextStBrack){
 				//Comma between the brackets
@@ -76,7 +76,8 @@ public class JobDescription {
 			if (nodeGroup!=null && !nodeGroup.isEmpty()){
 				if (nodeGroup.contains("[")){
 					manageNodeGroup(nodeGroup, nodeList2);
-				}else{	
+				}else{
+					LOGGER.debug("Adding node: "+nodeGroup);
 					nodeList2.add(nodeGroup);
 				}
 			}
@@ -84,15 +85,21 @@ public class JobDescription {
 			nextEndBrack = value.indexOf(startPosition, ']');
 			nextComma = value.indexOf(startPosition, ',');
 		}
-		//Check if there another node to group at the end
-		if (startPosition > 0 && startPosition < value.length()){
+		//Check if there is another node to group at the end
+		if (startPosition >= 0 && startPosition < value.length()){
 			nodeGroup= value.substring(startPosition);
+			LOGGER.debug("Evaluating nodeGroup: "+nodeGroup);
 			if (nodeGroup.contains("[")){
 				manageNodeGroup(nodeGroup, nodeList2);
 			}else{
 				nodeList2.add(nodeGroup);
 			}
 		}
+		//if (nextComma < 0 && nextStBrack < 0){
+			//nodeList2.add(value);
+			
+		//}
+			
 	}
 
 	private static void manageNodeGroup(String nodeGroup, List<String> nodeList2) {
