@@ -181,7 +181,11 @@ public class SlurmClient {
     	String cmd = "scontrol update JobId="+mainJobId +" NumNodes=ALL";
         LOGGER.debug("update job CMD: " + cmd);
         executeCmd(cmd);
-        jobIdToNodes.put(jobId, jdesc.getNodeList());
+        List<String> nodeIds = jdesc.getNodeList();
+        jobIdToNodes.put(jobId, nodeIds);
+        for (String nodeId:nodeIds){
+        	nodeToJobId.put(nodeId, jobId);
+        }
     }
 
 
