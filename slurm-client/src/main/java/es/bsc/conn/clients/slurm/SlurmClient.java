@@ -124,23 +124,27 @@ public class SlurmClient {
     		String cancelJob="";
     		if (nodeJobId!=null){
     			List<String> nodesInJob= jobIdToNodes.get(nodeJobId);
-    			if (nodesInJob.size()==1){
+    			if (nodesInJob.size() == 1){
     				cancelJob = "scancel "+ nodeJobId;
     			}
     		}
     		String args = "NodeList="+ masterId;
     		Set<String> nodeList = nodeToJobId.keySet();
+    		int nodes = 1;
     		for (String node: nodeList){
-    			if (!node.equals(resourceId)){
-    				args= args.concat(","+node);
+    			if (!node.equals(resourceId)&& !node.equals(masterId)){
+    				args = args.concat(","+node);
+    				nodes++;
     			}
     		}
-    		String cmd = "scontrol update JobId="+ mainJobId + " " + args + "; " + cancelJob ;
+    		args = args.concat(" NumNodes="+nodes);
+    		String cmd = "scontrol update JobId="+ mainJobId + " " + args ;
     		try {
     			executeCmd(cmd);
     			if (nodeJobId!=null){
     				jobIdToNodes.get(nodeJobId).remove(resourceId);
     				if (!cancelJob.isEmpty()){
+    					executeCmd(cancelJob);
     					jobIdToNodes.remove(nodeJobId);
     				}
     			}
@@ -174,7 +178,7 @@ public class SlurmClient {
 	}
 
 	public void addNodesToMain(String jobId, JobDescription jdesc) throws ConnClientException{
-    	String cmd = "scontrol update JobId="+mainJobId +" NumNodes=ALL NumCPUS=ALL";
+    	String cmd = "scontrol update JobId="+mainJobId +" NumNodes=ALL";
         LOGGER.debug("update job CMD: " + cmd);
         executeCmd(cmd);
         jobIdToNodes.put(jobId, jdesc.getNodeList());
