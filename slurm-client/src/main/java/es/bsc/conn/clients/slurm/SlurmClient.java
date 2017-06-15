@@ -121,18 +121,14 @@ public class SlurmClient {
     public void deleteCompute(String resourceId) throws ConnClientException {
     	if (!resourceId.equals(masterId)){
     		String nodeJobId = nodeToJobId.get(resourceId);
-    		String cancelJob="";
-    		if (nodeJobId!=null){
-    			List<String> nodesInJob= jobIdToNodes.get(nodeJobId);
-    			if (nodesInJob.size() == 1){
-    				cancelJob = "scancel "+ nodeJobId;
-    			}
-    		}
+    		//Remove node from node to JobId list
+    		nodeToJobId.remove(resourceId);
+    		//Getting updated nodelist
     		String args = "NodeList="+ masterId;
     		Set<String> nodeList = nodeToJobId.keySet();
     		int nodes = 1;
     		for (String node: nodeList){
-    			if (!node.equals(resourceId)&& !node.equals(masterId)){
+    			if (!node.equals(masterId)){
     				args = args.concat(","+node);
     				nodes++;
     			}
@@ -141,18 +137,25 @@ public class SlurmClient {
     		String cmd = "scontrol update JobId="+ mainJobId + " " + args ;
     		try {
     			executeCmd(cmd);
-    			if (nodeJobId!=null){
-    				jobIdToNodes.get(nodeJobId).remove(resourceId);
-    				if (!cancelJob.isEmpty()){
-    					executeCmd(cancelJob);
-    					jobIdToNodes.remove(nodeJobId);
-    				}
-    			}
-    			nodeToJobId.remove(resourceId);
-    			
     		} catch (ConnClientException e) {
-    			LOGGER.error("Cannot delete resource with id " + resourceId, e);
-    			throw e;
+    			LOGGER.warn("Cannot update job "+ mainJobId + " with " + args , e);
+    		}
+    		if (nodeJobId!=null){
+    			List<String> nodesInJob= jobIdToNodes.get(nodeJobId);
+    			nodesInJob.remove(resourceId);
+    			if (nodesInJob.isEmpty()){
+    				jobIdToNodes.remove(nodeJobId);
+    				String cancelJob = "scancel "+ nodeJobId;
+    				try {
+    					executeCmd(cancelJob);
+    				} catch (ConnClientException e) {
+    	    			LOGGER.warn("Cannot cancel job "+nodeJobId + " from resource " + resourceId , e);
+    	    		}
+    			}else{
+    				LOGGER.warn("Job "+nodeJobId+ " is not empty. Skiping job cancel ");
+    			}
+    		}else{
+    			LOGGER.warn("JobId for resource " + resourceId + " does not exist");
     		}
     	}else{
     		LOGGER.warn("Trying to remove master node. It is not allowed"); 
@@ -178,14 +181,29 @@ public class SlurmClient {
 	}
 
 	public void addNodesToMain(String jobId, JobDescription jdesc) throws ConnClientException{
-    	String cmd = "scontrol update JobId="+mainJobId +" NumNodes=ALL";
-        LOGGER.debug("update job CMD: " + cmd);
-        executeCmd(cmd);
         List<String> nodeIds = jdesc.getNodeList();
         jobIdToNodes.put(jobId, nodeIds);
         for (String nodeId:nodeIds){
         	nodeToJobId.put(nodeId, jobId);
         }
+        String args = "NodeList="+ masterId;
+		Set<String> nodeList = nodeToJobId.keySet();
+		int nodes = 1;
+		for (String node: nodeList){
+			if ( !node.equals(masterId)){
+				args = args.concat(","+node);
+				nodes++;
+			}
+		}
+		args = args.concat(" NumNodes="+nodes);
+        String cmd = "scontrol update JobId="+mainJobId +" "+args;
+        LOGGER.debug("update job CMD: " + cmd);
+        try{
+        	executeCmd(cmd);
+        } catch (ConnClientException e) {
+			LOGGER.warn("Error updating job "+ mainJobId + " with " + args);
+		}
+        
     }
 
 
