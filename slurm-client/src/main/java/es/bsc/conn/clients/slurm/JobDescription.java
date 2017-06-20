@@ -32,9 +32,7 @@ public class JobDescription {
 				if (eqIndex >= 0){
 					String key = par.substring(0, eqIndex);
 					String value = par.substring(eqIndex+1);
-					LOGGER.debug("Evaluating key: "+ key+", value:"+ value);
 					if (key.equals(TRES)){
-						LOGGER.debug("Parsing TRES: "+ value);
 						parseTREC(value);
 					}else if (key.equals("NodeList")){
 						LOGGER.debug("Parsing node list: "+ value);
@@ -46,7 +44,7 @@ public class JobDescription {
 						jobProperties.put(key, value);
 					}
 				}else{
-					LOGGER.debug("parameter " + par + " is not following the key=value. Skipping...");
+					//LOGGER.debug("parameter " + par + " is not following the key=value. Skipping...");
 				}
 			}
 		}
@@ -72,12 +70,11 @@ public class JobDescription {
 				nodeGroup= value.substring(startPosition, nextComma);
 				startPosition = nextComma+1;
 			}
-			LOGGER.debug("Evaluating nodeGroup: "+nodeGroup);
+		    //parsing a node group
 			if (nodeGroup!=null && !nodeGroup.isEmpty()){
 				if (nodeGroup.contains("[")){
 					manageNodeGroup(nodeGroup, nodeList2);
 				}else{
-					LOGGER.debug("Adding node: "+nodeGroup);
 					nodeList2.add(nodeGroup);
 				}
 			}
@@ -88,23 +85,17 @@ public class JobDescription {
 		//Check if there is another node to group at the end
 		if (startPosition >= 0 && startPosition < value.length()){
 			nodeGroup= value.substring(startPosition);
-			LOGGER.debug("Evaluating nodeGroup: "+nodeGroup);
 			if (nodeGroup.contains("[")){
 				manageNodeGroup(nodeGroup, nodeList2);
 			}else{
 				nodeList2.add(nodeGroup);
 			}
 		}
-		//if (nextComma < 0 && nextStBrack < 0){
-			//nodeList2.add(value);
-			
-		//}
 			
 	}
 
 	private static void manageNodeGroup(String nodeGroup, List<String> nodeList2) {
 		String nodeRoot = nodeGroup.substring(0,nodeGroup.indexOf('['));
-		LOGGER.debug("node root in " + nodeGroup + " is: "+ nodeRoot);
 		String numliststr = nodeGroup.substring(nodeGroup.indexOf('[')+1, nodeGroup.indexOf(']'));
 		if (numliststr.contains(",")){
 			String[] numList= numliststr.split(",");
