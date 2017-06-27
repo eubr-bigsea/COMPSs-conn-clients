@@ -216,8 +216,49 @@ public class RocciClient {
     }
 
 
+    /**
+     * Example:
+     * occi --endpoint https://extcloud05.ebi.ac.uk:8787/occi1.2/ --auth token --token $OS_TOKEN --resource [compute link] --action link --link [network link]
+     * 
+     * @param resourceId
+     * @param link 
+     */
     public void attachLink(String resourceId, String link){
-        String cmd = cmdLine + "--resource " + resourceId + " --action link --link " + link;
+        // Get only the necessary flags from cmdLine
+        String[] parts = cmdLine.split(" ");
+        String endpoint = "";
+        String auth = "";
+        String token = "";
+        String password = "";
+        String caPath = "";
+        String userCred = "";
+        for(int i=0; i<parts.length; i++){
+            if(parts[i].equals("--endpoint")){
+                endpoint = parts[i+1];
+            }
+            if(parts[i].equals("--auth")){
+                auth = parts[i+1];
+            }
+            if(parts[i].equals("--token")){
+                token = parts[i+1];
+            }
+            if(parts[i].equals("--password")){
+                password = parts[i+1];
+            }s
+            if(parts[i].equals("--ca-path")){
+                caPath = parts[i+1];
+            }
+            if(parts[i].equals("--user-cred")){
+                userCred = parts[i+1];
+            }
+        }
+        String authInfo = "";
+        if(auth.equals("token")){
+            authInfo = " --auth " + auth + " --token " + token
+        }else{
+            authInfo = " --auth " + auth + " --password " + password + " --ca-path " + caPath + " --user-cred " + userCred; 
+        }
+        String cmd = "occi --endpoint " + endpoint + authInfo + " --resource " + resourceId + " --action link --link " + link;
         try {
             executeCmd(cmd);
         } catch (ConnClientException e) {
