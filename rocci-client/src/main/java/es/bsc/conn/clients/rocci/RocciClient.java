@@ -244,7 +244,7 @@ public class RocciClient {
             }
             if(parts[i].equals("--password")){
                 password = parts[i+1];
-            }s
+            }
             if(parts[i].equals("--ca-path")){
                 caPath = parts[i+1];
             }
@@ -254,7 +254,7 @@ public class RocciClient {
         }
         String authInfo = "";
         if(auth.equals("token")){
-            authInfo = " --auth " + auth + " --token " + token
+            authInfo = " --auth " + auth + " --token " + token;
         }else{
             authInfo = " --auth " + auth + " --password " + password + " --ca-path " + caPath + " --user-cred " + userCred; 
         }
