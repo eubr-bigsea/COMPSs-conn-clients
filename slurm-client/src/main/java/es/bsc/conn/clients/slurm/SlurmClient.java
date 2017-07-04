@@ -145,9 +145,8 @@ public class SlurmClient {
     			nodesInJob.remove(resourceId);
     			if (nodesInJob.isEmpty()){
     				jobIdToNodes.remove(nodeJobId);
-    				String cancelJob = "scancel "+ nodeJobId;
     				try {
-    					executeCmd(cancelJob);
+    					cancelJob(nodeJobId);
     				} catch (ConnClientException e) {
     	    			LOGGER.warn("Cannot cancel job "+nodeJobId + " from resource " + resourceId , e);
     	    		}
