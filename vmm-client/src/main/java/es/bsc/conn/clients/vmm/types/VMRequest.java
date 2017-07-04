@@ -25,11 +25,12 @@ public class VMRequest {
      * @param ramMb
      * @param diskGb
      * @param applicationId
+     * @param preferredHost
      * @param needsFloatingIp
      */
     public VMRequest(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost,
             boolean needsFloatingIp) {
-        
+
         this.name = name;
         this.image = image;
         this.cpus = cpus;

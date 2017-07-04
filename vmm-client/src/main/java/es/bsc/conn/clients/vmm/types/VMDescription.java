@@ -26,14 +26,14 @@ public class VMDescription extends VMRequest {
      * @param ramMb
      * @param diskGb
      * @param applicationId
+     * @param preferredHost
      * @param needsFloatingIp
      * @param state
      * @param ipAddress
      * @param hostName
-     * @param dateCreated
      */
     public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost,
-            boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
+            boolean needsFloatingIp, String state, String ipAddress, String hostName) {
 
         super(name, image, cpus, ramMb, diskGb, applicationId, preferredHost, needsFloatingIp);
 

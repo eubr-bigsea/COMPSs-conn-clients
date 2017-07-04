@@ -34,6 +34,10 @@ import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
 
 
+/**
+ * A Mesos Framework Scheduler
+ *
+ */
 public class MesosFrameworkScheduler implements Scheduler {
 
     private static final String EMPTY = "";

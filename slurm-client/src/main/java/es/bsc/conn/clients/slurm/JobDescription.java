@@ -11,6 +11,10 @@ import org.apache.logging.log4j.Logger;
 import es.bsc.conn.clients.loggers.Loggers;
 
 
+/**
+ * Description of a SLURM job
+ *
+ */
 public class JobDescription {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.SLURM);
@@ -34,7 +38,7 @@ public class JobDescription {
     public JobDescription(String description) {
         String[] pars = description.split(" ");
         if (pars != null && pars.length > 0) {
-            jobProperties = new HashMap<String, String>(pars.length);
+            jobProperties = new HashMap<>(pars.length);
             for (String par : pars) {
                 int eqIndex = par.indexOf('=');
                 if (eqIndex >= 0) {
@@ -51,8 +55,6 @@ public class JobDescription {
                         }
                         jobProperties.put(key, value);
                     }
-                } else {
-                    // LOGGER.debug("parameter " + par + " is not following the key=value. Skipping...");
                 }
             }
         }
@@ -67,6 +69,12 @@ public class JobDescription {
         jobProperties = jobProp;
     }
 
+    /**
+     * Parses the node list and retrieves the result on @nodeList2
+     * 
+     * @param value
+     * @param nodeList2
+     */
     public static void parseNodelist(String value, List<String> nodeList2) {
         int startPosition = 0;
         int nextStBrack = value.indexOf('[');
@@ -95,7 +103,7 @@ public class JobDescription {
             nextEndBrack = value.indexOf(startPosition, ']');
             nextComma = value.indexOf(startPosition, ',');
         }
-        
+
         // Check if there is another node to group at the end
         if (startPosition >= 0 && startPosition < value.length()) {
             nodeGroup = value.substring(startPosition);
@@ -147,6 +155,11 @@ public class JobDescription {
 
     }
 
+    /**
+     * Generates a new request
+     * 
+     * @return
+     */
     public String generateRequest() {
         StringBuilder sb = new StringBuilder();
         String nodes = jobProperties.get(NUM_NODES);
@@ -157,19 +170,22 @@ public class JobDescription {
         sb.append("-N" + nodes);
         String cpusStr = jobProperties.get(NUM_CPUS);
         String cpusTaskStr = jobProperties.get(CPUS_TASK);
-        int cpusTask, cpus, tasks;
+
+        int cpusTask;
         if (cpusTaskStr == null || cpusTaskStr.isEmpty()) {
             cpusTask = 1;
         } else {
             cpusTask = Integer.parseInt(cpusTaskStr);
             sb.append(" --cpus_per_task=" + cpusTask);
         }
+
+        int cpus;
         if (cpusStr == null || cpusStr.isEmpty()) {
             cpus = cpusTask;
         } else {
             cpus = Integer.parseInt(cpusStr);
         }
-        tasks = cpus / cpusTask;
+        int tasks = cpus / cpusTask;
         sb.append(" -n" + tasks);
         String memStr = jobProperties.get(MEM);
         if (memStr != null && !memStr.isEmpty()) {
@@ -182,10 +198,21 @@ public class JobDescription {
         return sb.toString();
     }
 
+    /**
+     * Returns the node list
+     * 
+     * @return
+     */
     public List<String> getNodeList() {
         return nodeList;
     }
 
+    /**
+     * Returns the value of a given property
+     * 
+     * @param string
+     * @return
+     */
     public String getProperty(String string) {
         return jobProperties.get(string);
     }

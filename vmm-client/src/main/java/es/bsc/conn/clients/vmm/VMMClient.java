@@ -58,6 +58,7 @@ public class VMMClient {
      * @param ramMb
      * @param diskGb
      * @param applicationId
+     * @param preferredHost
      * @param needsFloatingIp
      * @return
      * @throws ConnClientException

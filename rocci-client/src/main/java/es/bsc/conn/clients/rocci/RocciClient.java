@@ -28,6 +28,10 @@ public class RocciClient {
     private static final String JSON_RESOURCES_OPEN = "{\"resources\":";
     private static final String JSON_RESOURCES_CLOSE = "}";
 
+    // Flags for occi commands (care spaces)
+    private static final String FLAG_ACTION = "--action ";
+    private static final String FLAG_RESOURCES = "--resources ";
+
     private final String cmdLine;
     private final String attributes;
 
@@ -58,7 +62,7 @@ public class RocciClient {
      */
     public String describeResource(String resourceId) throws ConnClientException {
         String resDesc = "";
-        String cmd = cmdLine + "--action describe" + " --resource " + resourceId;
+        String cmd = cmdLine + FLAG_ACTION + "describe " + FLAG_RESOURCES + resourceId;
 
         try {
             LOGGER.debug("Describe CMD: " + cmd);
@@ -185,7 +189,7 @@ public class RocciClient {
      * @param resourceId
      */
     public void deleteCompute(String resourceId) {
-        String cmd = cmdLine + "--action delete" + " --resource " + resourceId;
+        String cmd = cmdLine + FLAG_ACTION + "delete " + FLAG_RESOURCES + resourceId;
         try {
             executeCmd(cmd);
         } catch (ConnClientException e) {
@@ -203,7 +207,7 @@ public class RocciClient {
     public String createCompute(String osTPL, String resourceTPL) {
         String s = "";
 
-        String cmd = cmdLine + " --action create" + " --resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
+        String cmd = cmdLine + " " + FLAG_ACTION + "create " + "--resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
                 + " --attribute occi.core.title=\"" + attributes + "\"";
 
         try {

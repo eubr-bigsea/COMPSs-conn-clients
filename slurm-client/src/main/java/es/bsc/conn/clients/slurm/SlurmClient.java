@@ -24,6 +24,8 @@ public class SlurmClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.SLURM);
     private static final String EXPECTED_RESULT = "Submitted batch job ";
+    private static final String DESCRIBE_CMD = "Describe CMD: ";
+    private static final String ERROR_DESCRIBE_CMD = "Error on Describe CMD";
 
     private final String mainJobId;
     private final String masterId;
@@ -34,9 +36,8 @@ public class SlurmClient {
 
     /**
      * Instantiates a new SLURM Client with a default CMD and the given attributes
-     *
-     * @param cmdString
-     * @param attr
+     * 
+     * @param masterId
      */
     public SlurmClient(String masterId) {
         LOGGER.info("Initializing SLURM Client");
@@ -76,18 +77,18 @@ public class SlurmClient {
 
     /**
      * Returns the description of the Job with id @resourceId
-     *
-     * @param resourceId
+     * 
+     * @param jobId
      * @return
      * @throws ConnClientException
      */
     public JobDescription getJobDescription(String jobId) throws ConnClientException {
         String cmd = "scontrol show JobId=" + jobId;
         try {
-            LOGGER.debug("Describe CMD: " + cmd);
+            LOGGER.debug(DESCRIBE_CMD + cmd);
             return new JobDescription(executeCmd(cmd));
         } catch (ConnClientException ie) {
-            LOGGER.error("Error on Describe CMD", ie);
+            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
             throw new ConnClientException(ie);
         }
 
@@ -103,10 +104,10 @@ public class SlurmClient {
     public String getJobStatus(String jobId) throws ConnClientException {
         String cmd = "sacct -j" + jobId + "-n -P -o status ";
         try {
-            LOGGER.debug("Describe CMD: " + cmd);
+            LOGGER.debug(DESCRIBE_CMD + cmd);
             return executeCmd(cmd);
         } catch (ConnClientException ie) {
-            LOGGER.error("Error on Describe CMD", ie);
+            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
             throw new ConnClientException(ie);
         }
 
@@ -121,10 +122,10 @@ public class SlurmClient {
     public void cancelJob(String jobId) throws ConnClientException {
         String cmd = "scancel " + jobId;
         try {
-            LOGGER.debug("Describe CMD: " + cmd);
+            LOGGER.debug(DESCRIBE_CMD + cmd);
             executeCmd(cmd);
         } catch (ConnClientException ie) {
-            LOGGER.error("Error on Describe CMD", ie);
+            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
             throw new ConnClientException(ie);
         }
 
