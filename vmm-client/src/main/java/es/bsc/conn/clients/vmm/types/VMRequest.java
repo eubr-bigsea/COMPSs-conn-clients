@@ -27,7 +27,9 @@ public class VMRequest {
      * @param applicationId
      * @param needsFloatingIp
      */
-    public VMRequest(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost, boolean needsFloatingIp) {
+    public VMRequest(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost,
+            boolean needsFloatingIp) {
+        
         this.name = name;
         this.image = image;
         this.cpus = cpus;
@@ -89,13 +91,11 @@ public class VMRequest {
         return diskGb;
     }
 
-	/**
-	 * @return the preferredHost
-	 */
-	public String getPreferredHost() {
-		return preferredHost;
-	}
-    
-    
+    /**
+     * @return the preferredHost
+     */
+    public String getPreferredHost() {
+        return preferredHost;
+    }
 
 }

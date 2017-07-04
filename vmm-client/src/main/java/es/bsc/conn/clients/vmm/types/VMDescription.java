@@ -3,6 +3,7 @@ package es.bsc.conn.clients.vmm.types;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 /**
  * Description of a VM
  *
@@ -13,6 +14,7 @@ public class VMDescription extends VMRequest {
     private final String state;
     private final String ipAddress;
     private final String hostName;
+
 
     /**
      * Instantiate a new VM Description
@@ -30,9 +32,9 @@ public class VMDescription extends VMRequest {
      * @param hostName
      * @param dateCreated
      */
-    public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, 
-            String preferredHost, boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
-        
+    public VMDescription(String id, String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost,
+            boolean needsFloatingIp, String state, String ipAddress, String hostName, String dateCreated) {
+
         super(name, image, cpus, ramMb, diskGb, applicationId, preferredHost, needsFloatingIp);
 
         this.id = id;
@@ -47,13 +49,9 @@ public class VMDescription extends VMRequest {
      * @throws JSONException
      */
     public VMDescription(JSONObject jsonObject) throws JSONException {
-        super((String) jsonObject.get("name"),
-        		(String) jsonObject.get("image"), 
-                (int) jsonObject.get("cpus"), 
-                (int) jsonObject.get("ramMb"),
-                (int) jsonObject.get("diskGb"),
-                (String) jsonObject.get("applicationId"),"",
-                (boolean)jsonObject.get("needsFloatingIp"));
+        super((String) jsonObject.get("name"), (String) jsonObject.get("image"), (int) jsonObject.get("cpus"),
+                (int) jsonObject.get("ramMb"), (int) jsonObject.get("diskGb"), (String) jsonObject.get("applicationId"), "",
+                (boolean) jsonObject.get("needsFloatingIp"));
 
         this.id = (String) jsonObject.get("id");
         this.state = (String) jsonObject.get("state");

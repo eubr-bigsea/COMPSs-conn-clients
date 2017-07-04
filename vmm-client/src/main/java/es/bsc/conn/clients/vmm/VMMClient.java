@@ -19,6 +19,7 @@ import es.bsc.conn.clients.vmm.types.VMDescription;
 import es.bsc.conn.clients.vmm.types.VMRequest;
 import es.bsc.conn.clients.vmm.types.VMs;
 
+
 /**
  * VMM Client implementation
  * 
@@ -27,13 +28,14 @@ public class VMMClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.VMM);
     private static final String ERROR_INCORRECT_RETURN = "Incorrect return code: ";
-    
+
     private static final int MIN_CPUS = 1;
     private static final int MIN_RAM = 512;
     private static final int MIN_DISK = 1;
 
     private final Client client;
     private final WebResource resource;
+
 
     /**
      * Constructor
@@ -60,21 +62,21 @@ public class VMMClient {
      * @return
      * @throws ConnClientException
      */
-    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost, boolean needsFloatingIp) 
-            throws ConnClientException {
-        
+    public String createVM(String name, String image, int cpus, int ramMb, int diskGb, String applicationId, String preferredHost,
+            boolean needsFloatingIp) throws ConnClientException {
+
         // Check cpus, ram and disk parameters
         int usableCPUs = (cpus >= MIN_CPUS) ? cpus : MIN_CPUS;
         int usableRamMb = (ramMb >= MIN_RAM) ? ramMb : MIN_RAM;
         int usableDiskGb = (diskGb >= MIN_DISK) ? diskGb : MIN_DISK;
-        
+
         // Create request
         VMRequest vm = new VMRequest(name, image, usableCPUs, usableRamMb, usableDiskGb, applicationId, preferredHost, needsFloatingIp);
         VMs vms = new VMs();
         vms.addVM(vm);
-        
+
         JSONObject obj = new JSONObject(vms);
-        LOGGER.debug("Submitting vm creation ... \n"+obj.toString());
+        LOGGER.debug("Submitting vm creation ... \n" + obj.toString());
         ClientResponse cr = resource.path("vms").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, obj.toString());
         if (cr.getStatus() == Status.OK.getStatusCode()) {
             String id = null;
@@ -85,7 +87,7 @@ public class VMMClient {
             } catch (JSONException je) {
                 throw new ConnClientException(je);
             }
-                
+
             LOGGER.debug("VM submitted with id " + id);
             return id;
         } else {
@@ -122,6 +124,7 @@ public class VMMClient {
 
     /**
      * Deletes a given vmId
+     * 
      * @param vmId
      * @throws Exception
      */

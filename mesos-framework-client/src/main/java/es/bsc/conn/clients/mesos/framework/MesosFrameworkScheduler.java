@@ -33,8 +33,6 @@ import org.apache.mesos.Protos.Value;
 import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
 
-import org.apache.mesos.Protos.Labels;
-import org.apache.mesos.Protos.Label;
 
 public class MesosFrameworkScheduler implements Scheduler {
 
@@ -63,10 +61,10 @@ public class MesosFrameworkScheduler implements Scheduler {
     private final List<String> pendingTasks;
     private final Map<String, MesosTask> tasks;
 
-    private String dockerImage;
     private DockerInfo.Network dockerNetworkType = DockerInfo.Network.BRIDGE;
     private String dockerNetworkName = "";
     private boolean useCustomDockerNetwork = false;
+
 
     /**
      * Creates a new Mesos Framework scheduler.
@@ -82,11 +80,12 @@ public class MesosFrameworkScheduler implements Scheduler {
      * @return Mesos Framework identifier, if exists. Otherwise empty string.
      */
     public String getFrameworkId() {
-        return frameworkId == null? EMPTY: frameworkId.getValue();
+        return frameworkId == null ? EMPTY : frameworkId.getValue();
     }
 
     /**
-     * @param networkName Name of the network to use with Docker
+     * @param networkName
+     *            Name of the network to use with Docker
      */
     public void useDockerNetwork(String networkName) {
         useCustomDockerNetwork = true;
@@ -95,22 +94,27 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     /**
-     * @param  appName Aplication name
-     * @return         Unique identifier for a worker.
+     * @param appName
+     *            Aplication name
+     * @return Unique identifier for a worker.
      */
     public synchronized String generateWorkerId(String appName) {
         return appName + "-" + WORKER_NAME + "-" + Integer.toString(taskIdGenerator.incrementAndGet()) + "-" + frameworkId.getValue();
     }
 
     /**
-     * Petition to create a worker on Mesos, uses a docker image specified by imageName and will use
-     * resources specified in list to be created.
+     * Petition to create a worker on Mesos, uses a docker image specified by imageName and will use resources specified
+     * in list to be created.
      *
-     * @param driver    Mesos Scheduler driver.
-     * @param appName   Application name.
-     * @param imageName Docker image name.
-     * @param resources List of resource to use.
-     * @return          Identifier generated for that worker.
+     * @param driver
+     *            Mesos Scheduler driver.
+     * @param appName
+     *            Application name.
+     * @param imageName
+     *            Docker image name.
+     * @param resources
+     *            List of resource to use.
+     * @return Identifier generated for that worker.
      */
     public String requestWorker(SchedulerDriver driver, String appName, String imageName, List<Resource> resources) {
         LOGGER.debug("Requested worker");
@@ -123,16 +127,17 @@ public class MesosFrameworkScheduler implements Scheduler {
         return newWorkerId;
     }
 
-
     /**
-     * Wait for task with identifier to reach state. If state is not reached, task is removed from
-     * pending and running tasks.
+     * Wait for task with identifier to reach state. If state is not reached, task is removed from pending and running
+     * tasks.
      *
-     * @param id      Task identifier to wait for.
+     * @param id
+     *            Task identifier to wait for.
      * @param state
      * @param timeout
      * @param unit
-     * @throws FrameworkException if waits for timeout units.
+     * @throws FrameworkException
+     *             if waits for timeout units.
      */
     public void waitTask(String id, TaskState state, long timeout, TimeUnit unit) throws FrameworkException {
         Semaphore sem = new Semaphore(0);
@@ -173,12 +178,13 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     /**
-     * Wait for the framework to register in Mesos. If it is already registered returns immediately.
-     * Otherwise, acquires a semaphore until registered or reregistered is called or timeout is reached.
+     * Wait for the framework to register in Mesos. If it is already registered returns immediately. Otherwise, acquires
+     * a semaphore until registered or reregistered is called or timeout is reached.
      *
      * @param timeout
      * @param unit
-     * @throws FrameworkException if timeout is reached or frameworkId does not exist.
+     * @throws FrameworkException
+     *             if timeout is reached or frameworkId does not exist.
      */
     public void waitRegistration(long timeout, TimeUnit unit) throws FrameworkException {
         LOGGER.debug("Wait for framework to register " + timeout + " " + unit.toString());
@@ -194,14 +200,20 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     /**
-     * Removes a task. If it was on pending queue it has not a worker running on Mesos and only it is removed
-     * from queue. If it is running on Mesos asks the driver to kill it and waits for status update.
-     * @param driver  Mesos Scheduler driver.
+     * Removes a task. If it was on pending queue it has not a worker running on Mesos and only it is removed from
+     * queue. If it is running on Mesos asks the driver to kill it and waits for status update.
+     * 
+     * @param driver
+     *            Mesos Scheduler driver.
      *
-     * @param id      Task identifier.
-     * @param timeout Number of time units.
-     * @param unit    Unit of time.
-     * @throws FrameworkException if task does not exist.
+     * @param id
+     *            Task identifier.
+     * @param timeout
+     *            Number of time units.
+     * @param unit
+     *            Unit of time.
+     * @throws FrameworkException
+     *             if task does not exist.
      */
     public void removeTask(SchedulerDriver driver, String id, long timeout, TimeUnit unit) throws FrameworkException {
         synchronized (this) {
@@ -220,12 +232,13 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     /**
-     * Checks if there are workers requested. For every worker, checks all offers. If one has enough
-     * resources it is selected to launch a worker. Offers not used are declined. Workers are served
-     * in FCFS (First-come, first-served).
+     * Checks if there are workers requested. For every worker, checks all offers. If one has enough resources it is
+     * selected to launch a worker. Offers not used are declined. Workers are served in FCFS (First-come, first-served).
      *
-     * @param driver Mesos Scheduler driver.
-     * @param offers List of offers available from Mesos.
+     * @param driver
+     *            Mesos Scheduler driver.
+     * @param offers
+     *            List of offers available from Mesos.
      */
     @Override
     public synchronized void resourceOffers(SchedulerDriver driver, List<Offer> offers) {
@@ -276,8 +289,9 @@ public class MesosFrameworkScheduler implements Scheduler {
     /**
      * Searches for an IP in task with identifier id. If there are no IPs returns UNDEFINED_IP.
      *
-     * @param  id Task identifier.
-     * @return    Task's IP.
+     * @param id
+     *            Task identifier.
+     * @return Task's IP.
      */
     public synchronized String getTaskIp(String id) {
         if (tasks.containsKey(id)) {
@@ -288,9 +302,8 @@ public class MesosFrameworkScheduler implements Scheduler {
     }
 
     /**
-     * Task running in Mesos had an status update. Updates status, IP address assigned and releases
-     * semaphore if there was one waiting. If the new state is LOST, ERROR or FAILED it is rescheduled
-     * MAX_LAUNCH_RETRIES, then removes it.
+     * Task running in Mesos had an status update. Updates status, IP address assigned and releases semaphore if there
+     * was one waiting. If the new state is LOST, ERROR or FAILED it is rescheduled MAX_LAUNCH_RETRIES, then removes it.
      *
      * @param driver
      * @param status
@@ -340,9 +353,12 @@ public class MesosFrameworkScheduler implements Scheduler {
     /**
      * Framework registered successfully. Stores framework identifier.
      *
-     * @param driver      Mesos Scheduler driver.
-     * @param frameworkId Framework identifier assigned to this.
-     * @param masterInfo  Information about Mesos master.
+     * @param driver
+     *            Mesos Scheduler driver.
+     * @param frameworkId
+     *            Framework identifier assigned to this.
+     * @param masterInfo
+     *            Information about Mesos master.
      */
     @Override
     public synchronized void registered(SchedulerDriver driver, FrameworkID frameworkId, MasterInfo masterInfo) {
@@ -354,8 +370,10 @@ public class MesosFrameworkScheduler implements Scheduler {
     /**
      * Framework registered again successfully to Mesos.
      *
-     * @param driver     Mesos Scheduler driver.
-     * @param masterInfo Information about Mesos master.
+     * @param driver
+     *            Mesos Scheduler driver.
+     * @param masterInfo
+     *            Information about Mesos master.
      */
     @Override
     public synchronized void reregistered(SchedulerDriver driver, MasterInfo masterInfo) {
@@ -404,6 +422,7 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     /**
      * Warn that error ocurred.
+     * 
      * @param driver
      * @param message
      */
@@ -411,7 +430,6 @@ public class MesosFrameworkScheduler implements Scheduler {
     public void error(SchedulerDriver driver, String message) {
         LOGGER.warn("Error: " + message);
     }
-
 
     private void releaseRegisterSem() {
         if (registerSem != null) {
@@ -489,9 +507,9 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     private LinkedList<Integer> rangeToIntegers(List<Value.Range> ports) {
         LinkedList<Integer> portsList = new LinkedList<>();
-        for(int i = 0; i < ports.size(); i++) {
+        for (int i = 0; i < ports.size(); i++) {
             Value.Range range = ports.get(i);
-            for(int n = (int) range.getBegin(); n <= range.getEnd(); n++) {
+            for (int n = (int) range.getBegin(); n <= range.getEnd(); n++) {
                 portsList.add(n);
             }
         }
@@ -570,12 +588,9 @@ public class MesosFrameworkScheduler implements Scheduler {
         containerInfoBuilder.setDocker(getDockerInfo(imageName, reqs.getPortsList(), pickedPorts));
 
         // Create task to run
-        TaskInfo taskInfo = TaskInfo.newBuilder().setName("Task " + idTask).setTaskId(taskId)
-                .setSlaveId(offer.getOffer().getSlaveId())
-                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus()))
-                .addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
-                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk()))
-                .addResources(buildResource(PORTS_RESOURCE, pickedPorts))
+        TaskInfo taskInfo = TaskInfo.newBuilder().setName("Task " + idTask).setTaskId(taskId).setSlaveId(offer.getOffer().getSlaveId())
+                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus())).addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
+                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk())).addResources(buildResource(PORTS_RESOURCE, pickedPorts))
                 .setContainer(containerInfoBuilder).setCommand(commandInfoDocker).build();
 
         LOGGER.debug("Launching task " + taskId.getValue());

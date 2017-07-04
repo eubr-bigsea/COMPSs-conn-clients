@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+
 /**
  * ROCCI Client version 4.2.5
  *
@@ -215,48 +216,51 @@ public class RocciClient {
         return s;
     }
 
-
     /**
-     * Example:
-     * occi --endpoint https://extcloud05.ebi.ac.uk:8787/occi1.2/ --auth token --token $OS_TOKEN --resource [compute link] --action link --link [network link]
+     * Example: occi --endpoint https://extcloud05.ebi.ac.uk:8787/occi1.2/ --auth token --token $OS_TOKEN --resource
+     * [compute link] --action link --link [network link]
      * 
      * @param resourceId
-     * @param link 
+     * @param link
      */
-    public void attachLink(String resourceId, String link){
+    public void attachLink(String resourceId, String link) {
         // Get only the necessary flags from cmdLine
         String[] parts = cmdLine.split(" ");
         String endpoint = "";
         String auth = "";
         String token = "";
-        String password = "";
+        String psw = "";
         String caPath = "";
         String userCred = "";
-        for(int i=0; i<parts.length; i++){
-            if(parts[i].equals("--endpoint")){
-                endpoint = parts[i+1];
-            }
-            if(parts[i].equals("--auth")){
-                auth = parts[i+1];
-            }
-            if(parts[i].equals("--token")){
-                token = parts[i+1];
-            }
-            if(parts[i].equals("--password")){
-                password = parts[i+1];
-            }
-            if(parts[i].equals("--ca-path")){
-                caPath = parts[i+1];
-            }
-            if(parts[i].equals("--user-cred")){
-                userCred = parts[i+1];
+        for (int i = 0; i < parts.length; i++) {
+            switch (parts[i]) {
+                case "--endpoint":
+                    endpoint = parts[i + 1];
+                    break;
+                case "--auth":
+                    auth = parts[i + 1];
+                    break;
+                case "--token":
+                    token = parts[i + 1];
+                    break;
+                case "--password":
+                    psw = parts[i + 1];
+                    break;
+                case "--ca-path":
+                    caPath = parts[i + 1];
+                    break;
+                case "--user-cred":
+                    userCred = parts[i + 1];
+                    break;
+                default:
+                    LOGGER.warn("Unrecognised tag: " + parts[i] + ". Skipping");
             }
         }
-        String authInfo = "";
-        if(auth.equals("token")){
+        String authInfo;
+        if ("token".equals(auth)) {
             authInfo = " --auth " + auth + " --token " + token;
-        }else{
-            authInfo = " --auth " + auth + " --password " + password + " --ca-path " + caPath + " --user-cred " + userCred; 
+        } else {
+            authInfo = " --auth " + auth + " --password " + psw + " --ca-path " + caPath + " --user-cred " + userCred;
         }
         String cmd = "occi --endpoint " + endpoint + authInfo + " --resource " + resourceId + " --action link --link " + link;
         try {
