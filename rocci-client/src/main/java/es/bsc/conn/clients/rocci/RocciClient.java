@@ -57,11 +57,14 @@ public class RocciClient {
                 s++;
                 links--;
             }else{
-                sb_create.append(cmdString.get(s)).append(" ");
+                sb.append(cmdString.get(s)).append(" ");
             }
         }
         cmdLine = sb.toString();
         cmdLine_create = sb_create.toString();
+        
+        LOGGER.debug("cmdLine       : " + cmdLine);
+        LOGGER.debug("cmdLine_create: " + cmdLine_create);
         
         attributes = attr;
     }
