@@ -32,7 +32,8 @@ public class RocciClient {
     private static final String FLAG_ACTION = "--action ";
     private static final String FLAG_RESOURCES = "--resources ";
 
-    private final String cmdLine;
+    private final String cmdLine;        // String with the necessary information for any other operation
+    private final String cmdLine_create; // Full string with multiple 2 links if exist - Only for VM creation purposes
     private final String attributes;
 
 
@@ -45,11 +46,23 @@ public class RocciClient {
     public RocciClient(List<String> cmdString, String attr) {
         LOGGER.info("Initializing RocciClient");
         StringBuilder sb = new StringBuilder();
-        for (String s : cmdString) {
-            sb.append(s).append(" ");
+        StringBuilder sb_create = new StringBuilder();
+        int links = 0;
+        for (int s=0; s<cmdString.size(); s++){
+            sb_create.append(cmdString.get(s)).append(" ");
+            if (cmdString.get(s).equals("--link")){
+                links++;
+            }
+            if (links == 2){
+                s++;
+                links--;
+            }else{
+                sb_create.append(cmdString.get(s)).append(" ");
+            }
         }
-
         cmdLine = sb.toString();
+        cmdLine_create = sb_create.toString();
+        
         attributes = attr;
     }
 
@@ -207,7 +220,7 @@ public class RocciClient {
     public String createCompute(String osTPL, String resourceTPL) {
         String s = "";
 
-        String cmd = cmdLine + " " + FLAG_ACTION + "create " + "--resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
+        String cmd = cmdLine_create + " " + FLAG_ACTION + "create " + "--resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
                 + " --attribute occi.core.title=\"" + attributes + "\"";
 
         try {
