@@ -118,7 +118,7 @@ public class RocciClient {
                 resIPs.add(obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface().getAddress());
             }
         }
-        String resultIPs = new String[resIPs.size()];
+        String[] resultIPs = new String[resIPs.size()];
         for (int i = 0; i <resIPs.size(); i++){
             resultIPs[i] = resIPs.get(i);
         }
