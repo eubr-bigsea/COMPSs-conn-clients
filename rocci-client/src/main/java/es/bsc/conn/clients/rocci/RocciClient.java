@@ -119,7 +119,9 @@ public class RocciClient {
             }
         }
         String resultIPs = new String[resIPs.size()];
-        resultIPs = resIPs.toArray(resultIPs);
+        for (int i = 0; i <resIPs.size(); i++){
+            resultIPs[i] = resIPs.get(i);
+        }
         
         return resultIPs;
      }
