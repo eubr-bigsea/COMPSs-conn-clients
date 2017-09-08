@@ -48,17 +48,14 @@ public class RocciClient {
         StringBuilder sb = new StringBuilder();
         StringBuilder sb_create = new StringBuilder();
         boolean found_link1 = false;
-        for (int s=0; s<cmdString.size(); s+=2){
+        for (int s=0; s<cmdString.size(); s++){
             // Full list of cmd parameters
             sb_create.append(cmdString.get(s)).append(" ");
-            sb_create.append(cmdString.get(s+1)).append(" ");
             // List with all cmd parameters but extra links
-            if (!cmdString.get(s).equals("--link")){
+            if (!cmdString.get(s).startsWith(" --link")){
                 sb.append(cmdString.get(s)).append(" ");
-                sb.append(cmdString.get(s+1)).append(" ");
             }else if (!found_link1){
                 sb.append(cmdString.get(s)).append(" ");
-                sb.append(cmdString.get(s+1)).append(" ");
                 found_link1 = true;
             }
         }
