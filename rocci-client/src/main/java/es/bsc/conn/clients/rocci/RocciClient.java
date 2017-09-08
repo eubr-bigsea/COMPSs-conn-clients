@@ -47,17 +47,19 @@ public class RocciClient {
         LOGGER.info("Initializing RocciClient");
         StringBuilder sb = new StringBuilder();
         StringBuilder sb_create = new StringBuilder();
-        int links = 0;
-        for (int s=0; s<cmdString.size(); s++){
+        boolean found_link1 = false;
+        for (int s=0; s<cmdString.size(); s+=2){
+            // Full list of cmd parameters
             sb_create.append(cmdString.get(s)).append(" ");
-            if (cmdString.get(s).equals("--link")){
-                links++;
-            }
-            if (links == 2){
-                s++;
-                links--;
-            }else{
+            sb_create.append(cmdString.get(s+1)).append(" ");
+            // List with all cmd parameters but extra links
+            if (!cmdString.get(s).equals("--link")){
                 sb.append(cmdString.get(s)).append(" ");
+                sb.append(cmdString.get(s+1)).append(" ");
+            }else if (!found_link1){
+                sb.append(cmdString.get(s)).append(" ");
+                sb.append(cmdString.get(s+1)).append(" ");
+                found_link1 = true;
             }
         }
         cmdLine = sb.toString();
