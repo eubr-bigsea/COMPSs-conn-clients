@@ -30,10 +30,9 @@ public class RocciClient {
 
     // Flags for occi commands (care spaces)
     private static final String FLAG_ACTION = "--action ";
-    private static final String FLAG_RESOURCES = "--resources ";
+    private static final String FLAG_RESOURCE = "--resource ";
 
     private final String cmdLine;        // String with the necessary information for any other operation
-    private final String cmdLine_create; // Full string with multiple 2 links if exist - Only for VM creation purposes
     private final String attributes;
 
 
@@ -46,25 +45,11 @@ public class RocciClient {
     public RocciClient(List<String> cmdString, String attr) {
         LOGGER.info("Initializing RocciClient");
         StringBuilder sb = new StringBuilder();
-        StringBuilder sb_create = new StringBuilder();
-        boolean found_link1 = false;
-        for (int s=0; s<cmdString.size(); s++){
-            // Full list of cmd parameters
-            sb_create.append(cmdString.get(s)).append(" ");
-            // List with all cmd parameters but extra links
-            if (!cmdString.get(s).startsWith("--link")){
-                sb.append(cmdString.get(s)).append(" ");
-            }else if (!found_link1){
-                sb.append(cmdString.get(s)).append(" ");
-                found_link1 = true;
-            }
+        for (String s : cmdString) {
+            sb.append(s).append(" ");
         }
         cmdLine = sb.toString();
-        cmdLine_create = sb_create.toString();
-        
         LOGGER.debug("cmdLine       : " + cmdLine);
-        LOGGER.debug("cmdLine_create: " + cmdLine_create);
-        
         attributes = attr;
     }
 
@@ -77,7 +62,7 @@ public class RocciClient {
      */
     public String describeResource(String resourceId) throws ConnClientException {
         String resDesc = "";
-        String cmd = cmdLine + FLAG_ACTION + "describe " + FLAG_RESOURCES + resourceId;
+        String cmd = cmdLine + FLAG_ACTION + "describe " + FLAG_RESOURCE + resourceId;
 
         try {
             LOGGER.debug("Describe CMD: " + cmd);
@@ -204,7 +189,7 @@ public class RocciClient {
      * @param resourceId
      */
     public void deleteCompute(String resourceId) {
-        String cmd = cmdLine + FLAG_ACTION + "delete " + FLAG_RESOURCES + resourceId;
+        String cmd = cmdLine + FLAG_ACTION + "delete " + FLAG_RESOURCE + resourceId;
         try {
             executeCmd(cmd);
         } catch (ConnClientException e) {
@@ -222,7 +207,7 @@ public class RocciClient {
     public String createCompute(String osTPL, String resourceTPL) {
         String s = "";
 
-        String cmd = cmdLine_create + " " + FLAG_ACTION + "create " + "--resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
+        String cmd = cmdLine + " " + FLAG_ACTION + "create " + "--resource compute -M os_tpl#" + osTPL + " -M resource_tpl#" + resourceTPL
                 + " --attribute occi.core.title=\"" + attributes + "\"";
 
         try {
