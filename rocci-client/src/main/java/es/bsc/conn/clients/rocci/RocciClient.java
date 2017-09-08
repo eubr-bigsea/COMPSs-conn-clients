@@ -95,19 +95,18 @@ public class RocciClient {
     }
 
     /**
-     * Returns the IP address of the VM with id @resourceId
+     * Returns the IP addresses of the VM with id @resourceId
      *
      * @param resourceId
      * @return
      * @throws ConnClientException
      */
-    public String getResourceAddress(String resourceId) throws ConnClientException {
+    public String[] getResourceAddress(String resourceId) throws ConnClientException {
         LOGGER.debug("Get Address from Resource " + resourceId);
-        String resIP = null;
-        String jsonOutput = describeResource(resourceId);
-
+         ArrayList<String> resIPs = new ArrayList<String>();
+         String jsonOutput = describeResource(resourceId);
+         
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
         jsonOutput = JSON_RESOURCES_OPEN + jsonOutput + JSON_RESOURCES_CLOSE;
 
         // convert the json string back to object
@@ -115,12 +114,14 @@ public class RocciClient {
 
         for (int i = 0; i < obj.getResources().get(0).getLinks().size(); i++) {
             if (obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface() != null) {
-                resIP = obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface().getAddress();
-                break;
+                resIPs.add(obj.getResources().get(0).getLinks().get(i).getAttributes().getOcci().getNetworkinterface().getAddress());
             }
         }
-        return resIP;
-    }
+        String resultIPs = new String[resIPs.size()];
+        resultIPs = resIPs.toArray(resultIPs);
+        
+        return resultIPs;
+     }
 
     /**
      * Returns the hardware description of the VM with id @resourceId
