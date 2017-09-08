@@ -52,7 +52,7 @@ public class RocciClient {
             // Full list of cmd parameters
             sb_create.append(cmdString.get(s)).append(" ");
             // List with all cmd parameters but extra links
-            if (!cmdString.get(s).startsWith(" --link")){
+            if (!cmdString.get(s).startsWith("--link")){
                 sb.append(cmdString.get(s)).append(" ");
             }else if (!found_link1){
                 sb.append(cmdString.get(s)).append(" ");
