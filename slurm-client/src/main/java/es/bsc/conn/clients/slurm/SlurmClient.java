@@ -24,14 +24,16 @@ public class SlurmClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.SLURM);
     private static final String EXPECTED_RESULT = "Submitted batch job ";
-    private static final String DESCRIBE_CMD = "Describe CMD: ";
-    private static final String ERROR_DESCRIBE_CMD = "Error on Describe CMD";
+    private static final String SLURM_CMD = "Slurm CMD: ";
+    private static final String ERROR_SLURM_CMD = "Error on Slurm CMD";
 
     private final String mainJobId;
     private final String masterId;
     private Map<String, String> nodeToJobId = new HashMap<>();
     private Map<String, List<String>> jobIdToNodes = new HashMap<>();
     private final int initialNodes;
+    private final boolean ssh;
+    
 
 
     /**
@@ -39,13 +41,15 @@ public class SlurmClient {
      * 
      * @param masterId
      */
-    public SlurmClient(String masterId) {
+    public SlurmClient(String masterId, boolean ssh) {
         LOGGER.info("Initializing SLURM Client");
+        this.masterId = masterId;
+        this.ssh = ssh;
+        
         List<String> nodeIds = parseNodes();
         this.initialNodes = nodeIds.size();
-        this.masterId = masterId;
+        
         this.mainJobId = System.getenv("SLURM_JOB_ID");
-
         if (mainJobId != null && nodeIds != null && !nodeIds.isEmpty()) {
             jobIdToNodes.put(mainJobId, nodeIds);
             for (String nodeId : nodeIds) {
@@ -85,10 +89,10 @@ public class SlurmClient {
     public JobDescription getJobDescription(String jobId) throws ConnClientException {
         String cmd = "scontrol show JobId=" + jobId;
         try {
-            LOGGER.debug(DESCRIBE_CMD + cmd);
+            LOGGER.debug(SLURM_CMD + cmd);
             return new JobDescription(executeCmd(cmd));
         } catch (ConnClientException ie) {
-            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
+            LOGGER.error(ERROR_SLURM_CMD, ie);
             throw new ConnClientException(ie);
         }
 
@@ -104,10 +108,10 @@ public class SlurmClient {
     public String getJobStatus(String jobId) throws ConnClientException {
         String cmd = "sacct -j" + jobId + "-n -P -o status ";
         try {
-            LOGGER.debug(DESCRIBE_CMD + cmd);
+            LOGGER.debug(SLURM_CMD + cmd);
             return executeCmd(cmd);
         } catch (ConnClientException ie) {
-            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
+            LOGGER.error(ERROR_SLURM_CMD, ie);
             throw new ConnClientException(ie);
         }
 
@@ -122,13 +126,23 @@ public class SlurmClient {
     public void cancelJob(String jobId) throws ConnClientException {
         String cmd = "scancel " + jobId;
         try {
-            LOGGER.debug(DESCRIBE_CMD + cmd);
+            LOGGER.debug(SLURM_CMD + cmd);
             executeCmd(cmd);
         } catch (ConnClientException ie) {
-            LOGGER.error(ERROR_DESCRIBE_CMD, ie);
+            LOGGER.error(ERROR_SLURM_CMD, ie);
             throw new ConnClientException(ie);
         }
 
+    }
+    
+    public void updateJob(String jobId, String args){
+    	String cmd = "scontrol update JobId="+ jobId + " " + args ;
+		try {
+			LOGGER.debug(SLURM_CMD + cmd);
+			executeCmd(cmd);
+		} catch (ConnClientException e) {
+			LOGGER.warn(ERROR_SLURM_CMD , e);
+		}
     }
 
     /**
@@ -153,12 +167,7 @@ public class SlurmClient {
                 }
             }
             args = args.concat(" NumNodes=" + nodes);
-            String cmd = "scontrol update JobId=" + mainJobId + " " + args;
-            try {
-                executeCmd(cmd);
-            } catch (ConnClientException e) {
-                LOGGER.warn("Cannot update job " + mainJobId + " with " + args, e);
-            }
+            updateJob(mainJobId, args);
             if (nodeJobId != null) {
                 List<String> nodesInJob = jobIdToNodes.get(nodeJobId);
                 nodesInJob.remove(resourceId);
@@ -191,7 +200,7 @@ public class SlurmClient {
      */
     public String createCompute(JobDescription jobDesc, String script) throws ConnClientException {
         String cmd = "sbatch --dependency=expand:" + mainJobId + " " + jobDesc.generateRequest() + " " + script;
-        LOGGER.debug("Create CMD: " + cmd);
+        LOGGER.debug(SLURM_CMD + cmd);
         return parseJobIDFormCreationOutput(executeCmd(cmd));
     }
 
@@ -228,14 +237,7 @@ public class SlurmClient {
             }
         }
         args = args.concat(" NumNodes=" + nodes);
-        String cmd = "scontrol update JobId=" + mainJobId + " " + args;
-        LOGGER.debug("Update job CMD: " + cmd);
-        try {
-            executeCmd(cmd);
-        } catch (ConnClientException cce) {
-            LOGGER.warn("Error updating job " + mainJobId + " with " + args);
-            throw cce;
-        }
+        updateJob(mainJobId, args);
 
     }
 
