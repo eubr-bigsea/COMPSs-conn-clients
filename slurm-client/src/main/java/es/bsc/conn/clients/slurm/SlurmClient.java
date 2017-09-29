@@ -243,6 +243,9 @@ public class SlurmClient {
 
     private String executeCmd(String cmd) throws ConnClientException {
         try {
+        	if (ssh){
+        		cmd = "ssh "+ masterId + " " + cmd;
+        	}
             LOGGER.info("Execute CMD: " + cmd);
             Process p = Runtime.getRuntime().exec(cmd);
 
