@@ -42,10 +42,10 @@ public class SlurmClient {
      * @param masterId
      */
     public SlurmClient(String masterId, boolean ssh) {
-        LOGGER.info("Initializing SLURM Client");
+        
         this.masterId = masterId;
         this.ssh = ssh;
-        
+        LOGGER.info("Initializing SLURM Client ("+ this.masterId + this.ssh+")");
         List<String> nodeIds = parseNodes();
         this.initialNodes = nodeIds.size();
         
@@ -241,12 +241,15 @@ public class SlurmClient {
 
     }
 
-    private String executeCmd(String cmd) throws ConnClientException {
+    private String executeCmd(String cmdToRun) throws ConnClientException {
         try {
+        	String cmd ;
         	if (ssh){
-        		cmd = "ssh "+ masterId + " " + cmd;
+        		cmd = "ssh "+ masterId + " " + cmdToRun;
+        	}else{
+        		cmd = cmdToRun;
         	}
-            LOGGER.info("Execute CMD: " + cmd);
+            LOGGER.info("Execute CMD ("+ssh+"): " + cmd);
             Process p = Runtime.getRuntime().exec(cmd);
 
             BufferedReader stdInput1 = new BufferedReader(new InputStreamReader(p.getInputStream()));
