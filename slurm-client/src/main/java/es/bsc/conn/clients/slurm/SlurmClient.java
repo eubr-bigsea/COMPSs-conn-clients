@@ -24,8 +24,8 @@ public class SlurmClient {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.SLURM);
     private static final String EXPECTED_RESULT = "Submitted batch job ";
-    private static final String SLURM_CMD = "Slurm CMD: ";
-    private static final String ERROR_SLURM_CMD = "Error on Slurm CMD";
+    private static final String SLURM_CMD = "[Client] Slurm CMD: ";
+    private static final String ERROR_SLURM_CMD = "[Client] Error on Slurm CMD";
 
     private final String mainJobId;
     private final String masterId;
@@ -45,7 +45,7 @@ public class SlurmClient {
         
         this.masterId = masterId;
         this.ssh = ssh;
-        LOGGER.info("Initializing SLURM Client ("+ this.masterId + this.ssh+")");
+        LOGGER.info("[Client] Initializing SLURM Client ("+ this.masterId + this.ssh+")");
         List<String> nodeIds = parseNodes();
         this.initialNodes = nodeIds.size();
         
@@ -56,7 +56,7 @@ public class SlurmClient {
                 nodeToJobId.put(nodeId, mainJobId);
             }
         } else {
-            LOGGER.error("ERROR no SLURM_JOB_ID defined SLURM client will not work");
+            LOGGER.error("[Client] ERROR no SLURM_JOB_ID defined SLURM client will not work");
         }
     }
 
@@ -249,14 +249,14 @@ public class SlurmClient {
         	}else{
         		cmd = cmdToRun;
         	}
-            LOGGER.info("Execute CMD ("+ssh+"): " + cmd);
+            LOGGER.info("[Client] Execute CMD ("+ssh+"): " + cmd);
             Process p = Runtime.getRuntime().exec(cmd);
 
             BufferedReader stdInput1 = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader stdError1 = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
             // Read the output from the command
-            LOGGER.debug("Execute CMD Output:");
+            LOGGER.debug("[Client] Execute CMD Output:");
             String line;
             StringBuilder cmdResult = new StringBuilder();
             while ((line = stdInput1.readLine()) != null) {
@@ -265,14 +265,14 @@ public class SlurmClient {
             }
 
             // Read any errors from the attempted command
-            LOGGER.error("Execute CMD Error:");
+            LOGGER.error("[Client] Execute CMD Error:");
             while ((line = stdError1.readLine()) != null) {
                 LOGGER.error(line);
             }
 
             p.waitFor();
 
-            LOGGER.info("Excute CMD exitValue: " + p.exitValue());
+            LOGGER.info("[Client] Excute CMD exitValue: " + p.exitValue());
             LOGGER.info("__________________________________________");
 
             return cmdResult.toString();
