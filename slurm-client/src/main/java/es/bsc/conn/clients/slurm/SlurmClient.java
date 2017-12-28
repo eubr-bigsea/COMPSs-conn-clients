@@ -33,6 +33,7 @@ public class SlurmClient {
     private Map<String, List<String>> jobIdToNodes = new HashMap<>();
     private final int initialNodes;
     private final boolean ssh;
+    private final boolean expand;
     
 
 
@@ -41,11 +42,12 @@ public class SlurmClient {
      * 
      * @param masterId
      */
-    public SlurmClient(String masterId, boolean ssh) {
+    public SlurmClient(String masterId, boolean ssh, boolean expand) {
         
         this.masterId = masterId;
         this.ssh = ssh;
-        LOGGER.info("[Client] Initializing SLURM Client ("+ this.masterId + this.ssh+")");
+        this.expand = expand;
+        LOGGER.info("[Client] Initializing SLURM Client ("+ this.masterId + this.ssh + this.expand+")");
         List<String> nodeIds = parseNodes();
         this.initialNodes = nodeIds.size();
         
@@ -199,7 +201,12 @@ public class SlurmClient {
      * @throws ConnClientException
      */
     public String createCompute(JobDescription jobDesc, String script) throws ConnClientException {
-        String cmd = "sbatch --dependency=expand:" + mainJobId + " " + jobDesc.generateRequest() + " " + script;
+    	String cmd = null;
+    	if(expand){
+        	cmd = "sbatch --dependency=expand:" + mainJobId + " " + jobDesc.generateRequest() + " " + script;
+        }else{
+        	cmd = "sbatch "+ jobDesc.generateRequest() + " " + script;
+        }
         LOGGER.debug(SLURM_CMD + cmd);
         return parseJobIDFormCreationOutput(executeCmd(cmd));
     }
