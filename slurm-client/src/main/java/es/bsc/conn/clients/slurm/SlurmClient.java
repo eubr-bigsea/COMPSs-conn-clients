@@ -47,7 +47,7 @@ public class SlurmClient {
         this.masterId = masterId;
         this.ssh = ssh;
         this.expand = expand;
-        LOGGER.info("[Client] Initializing SLURM Client ("+ this.masterId + this.ssh + this.expand+")");
+        LOGGER.info("[Client] Initializing SLURM Client ("+ this.masterId +" "+ this.ssh +" "+ this.expand+")");
         List<String> nodeIds = parseNodes();
         this.initialNodes = nodeIds.size();
         
