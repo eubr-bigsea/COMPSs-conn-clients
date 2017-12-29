@@ -30,13 +30,13 @@ import org.apache.mesos.Protos.TaskInfo;
 import org.apache.mesos.Protos.TaskState;
 import org.apache.mesos.Protos.TaskStatus;
 import org.apache.mesos.Protos.Value;
+import org.apache.mesos.Protos.Volume;
 import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
 
 
 /**
- * A Mesos Framework Scheduler
- *
+ * Mesos Scheduler implementation for COMPSs.
  */
 public class MesosFrameworkScheduler implements Scheduler {
 
@@ -48,9 +48,6 @@ public class MesosFrameworkScheduler implements Scheduler {
     private static final String MEM_RESOURCE = "mem";
     private static final String DISK_RESOURCE = "disk";
     private static final String PORTS_RESOURCE = "ports";
-
-    private static final String DOCKER_COMMAND = "/usr/sbin/sshd -D";
-    private static final String WORKER_NAME = "Worker";
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MF_SCHEDULER);
     private static final String ERROR_TASK_ID = "ERROR: Task does not exist. TaskId = ";
@@ -65,9 +62,14 @@ public class MesosFrameworkScheduler implements Scheduler {
     private final List<String> pendingTasks;
     private final Map<String, MesosTask> tasks;
 
+    private ContainerInfo.Type containerizer = ContainerInfo.Type.DOCKER;
     private DockerInfo.Network dockerNetworkType = DockerInfo.Network.BRIDGE;
     private String dockerNetworkName = "";
     private boolean useCustomDockerNetwork = false;
+
+    private boolean mountDockerVolume = false;
+    private String dockerVolumeHostPath = "";
+    private String dockerVolumeContainerPath = "";
 
 
     /**
@@ -91,19 +93,59 @@ public class MesosFrameworkScheduler implements Scheduler {
      * @param networkName
      *            Name of the network to use with Docker
      */
-    public void useDockerNetwork(String networkName) {
+    public void useDockerNetworkName(String networkName) {
         useCustomDockerNetwork = true;
-        dockerNetworkType = DockerInfo.Network.USER;
         dockerNetworkName = networkName;
+        dockerNetworkType = DockerInfo.Network.USER;
     }
 
     /**
-     * @param appName
-     *            Aplication name
-     * @return Unique identifier for a worker.
+     * @param networkType Type the network to use with Docker
+     */
+    public void useDockerNetworkType(String networkType) {
+        switch(networkType.toUpperCase()) {
+        case "BRIDGE":
+            dockerNetworkType = DockerInfo.Network.BRIDGE;
+            break;
+        case "HOST":
+            dockerNetworkType = DockerInfo.Network.HOST;
+            break;
+        case "USER":
+            dockerNetworkType = DockerInfo.Network.USER;
+            break;
+        default:
+            // Nothing
+        }
+    }
+
+    /**
+     * @param containerType Containerizer to use
+     */
+    public void useContainerizer(String containerType) {
+        switch(containerType.toUpperCase()) {
+        case "DOCKER":
+            containerizer = ContainerInfo.Type.DOCKER;
+            break;
+        case "MESOS":
+            containerizer = ContainerInfo.Type.MESOS;
+            break;
+        default:
+            // Nothing
+        }
+    }
+
+    public void useDockerVolume(String hostPath, String containerPath) {
+        mountDockerVolume = true;
+        dockerVolumeHostPath = hostPath;
+        dockerVolumeContainerPath = containerPath;
+    }
+
+    /**
+     * @param  appName Aplication name
+     * @return         Unique identifier for a worker.
      */
     public synchronized String generateWorkerId(String appName) {
-        return appName + "-" + WORKER_NAME + "-" + Integer.toString(taskIdGenerator.incrementAndGet()) + "-" + frameworkId.getValue();
+        return appName + "-" + Integer.toString(taskIdGenerator.incrementAndGet()) + "-" + frameworkId.getValue();
     }
 
     /**
@@ -120,12 +162,14 @@ public class MesosFrameworkScheduler implements Scheduler {
      *            List of resource to use.
      * @return Identifier generated for that worker.
      */
-    public String requestWorker(SchedulerDriver driver, String appName, String imageName, List<Resource> resources) {
+    public String requestWorker(SchedulerDriver driver, String appName,
+            String imageName, String dockerCommand, List<Resource> resources) {
         LOGGER.debug("Requested worker");
         String newWorkerId = generateWorkerId(appName);
         synchronized (this) {
             pendingTasks.add(newWorkerId);
-            tasks.put(newWorkerId, new MesosTask(newWorkerId, imageName, TaskState.TASK_STAGING, resources));
+            tasks.put(newWorkerId, new MesosTask(newWorkerId, imageName,
+                    dockerCommand, TaskState.TASK_STAGING, resources));
             driver.reviveOffers();
         }
         return newWorkerId;
@@ -206,7 +250,7 @@ public class MesosFrameworkScheduler implements Scheduler {
     /**
      * Removes a task. If it was on pending queue it has not a worker running on Mesos and only it is removed from
      * queue. If it is running on Mesos asks the driver to kill it and waits for status update.
-     * 
+     *
      * @param driver
      *            Mesos Scheduler driver.
      *
@@ -269,7 +313,8 @@ public class MesosFrameworkScheduler implements Scheduler {
                 continue;
             }
             MesosOffer offer = processedOffers.get(index);
-            TaskInfo task = getTaskInfo(id, mesosTask.getImageName(), requirements, offer);
+            TaskInfo task = getTaskInfo(id, mesosTask.getImageName(),
+                    mesosTask.getDockerCommand(), requirements, offer);
             OfferID offerId = offer.getOffer().getId();
             launchTask(driver, offer.getOffer(), task);
 
@@ -426,7 +471,7 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     /**
      * Warn that error ocurred.
-     * 
+     *
      * @param driver
      * @param message
      */
@@ -543,7 +588,7 @@ public class MesosFrameworkScheduler implements Scheduler {
 
     private DockerInfo getDockerInfo(String imageName, List<Value.Range> containerPorts, List<Value.Range> hostPorts) {
         DockerInfo.Builder dockerInfoBuilder = DockerInfo.newBuilder().setImage(imageName).setNetwork(dockerNetworkType);
-        addPortsToDocker(dockerInfoBuilder, containerPorts, hostPorts);
+        //addPortsToDocker(dockerInfoBuilder, containerPorts, hostPorts);
         return dockerInfoBuilder.build();
     }
 
@@ -575,26 +620,37 @@ public class MesosFrameworkScheduler implements Scheduler {
         return Resource.newBuilder().setName(name).setType(Value.Type.RANGES).setRanges(buildRanges(ranges)).build();
     }
 
-    private TaskInfo getTaskInfo(String idTask, String imageName, MesosOffer reqs, MesosOffer offer) {
+    private TaskInfo getTaskInfo(String idTask, String imageName,
+            String dockerCommand, MesosOffer reqs, MesosOffer offer) {
         int openPorts = reqs.getNumPorts();
 
         TaskID taskId = TaskID.newBuilder().setValue(idTask).build();
 
         List<Value.Range> pickedPorts = offer.getMinPorts(openPorts);
-        CommandInfo commandInfoDocker = CommandInfo.newBuilder().setValue(DOCKER_COMMAND).build();
+        CommandInfo commandInfoDocker = CommandInfo.newBuilder()
+                .setValue(dockerCommand).build();
 
         // Container info
         ContainerInfo.Builder containerInfoBuilder = ContainerInfo.newBuilder();
         if (useCustomDockerNetwork) {
             containerInfoBuilder.addNetworkInfos(NetworkInfo.newBuilder().setName(dockerNetworkName).build());
         }
-        containerInfoBuilder.setType(ContainerInfo.Type.DOCKER);
+        if (mountDockerVolume) {
+            containerInfoBuilder.addVolumes(Volume.newBuilder().setMode(Volume.Mode.RW)
+                                                .setHostPath(dockerVolumeHostPath)
+                                                .setContainerPath(dockerVolumeContainerPath)
+                                                .build());
+        }
+        containerInfoBuilder.setType(containerizer);
         containerInfoBuilder.setDocker(getDockerInfo(imageName, reqs.getPortsList(), pickedPorts));
 
         // Create task to run
-        TaskInfo taskInfo = TaskInfo.newBuilder().setName("Task " + idTask).setTaskId(taskId).setSlaveId(offer.getOffer().getSlaveId())
-                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus())).addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
-                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk())).addResources(buildResource(PORTS_RESOURCE, pickedPorts))
+        TaskInfo taskInfo = TaskInfo.newBuilder().setName("Task " + idTask).setTaskId(taskId)
+                .setSlaveId(offer.getOffer().getSlaveId())
+                .addResources(buildResource(CPUS_RESOURCE, reqs.getCpus()))
+                .addResources(buildResource(MEM_RESOURCE, reqs.getMem()))
+                .addResources(buildResource(DISK_RESOURCE, reqs.getDisk()))
+                // .addResources(buildResource(PORTS_RESOURCE, pickedPorts))
                 .setContainer(containerInfoBuilder).setCommand(commandInfoDocker).build();
 
         LOGGER.debug("Launching task " + taskId.getValue());

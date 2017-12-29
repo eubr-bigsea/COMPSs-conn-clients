@@ -28,18 +28,27 @@ public class MesosFramework {
 
     private static final String TRUE = "true";
 
-    private static final String FRAMEWORK_NAME = "COMPSs Framework";
+    private static final String DEFAULT_FRAMEWORK_NAME = "COMPSs Framework";
     private static final String COMPSS_PRINCIPAL = "compss-framework-java";
 
     private static final String SERVER_IP = "Server";
 
     // Mesos Framework options
+    private static final String MESOS_FRAMEWORK_NAME = "mesos-framework-name";
+
+    private static final String MESOS_CONTAINERIZER = "mesos-containerizer";
     private static final String MESOS_CHECKPOINT = "mesos-checkpoint";
     private static final String MESOS_AUTHENTICATE = "mesos-authenticate";
-    private static final String MESOS_DEFAULT_PRINCIPAL = "mesos-default-principal";
-    private static final String MESOS_DEFAULT_SECRET = "mesos-default-secret";
-    private static final String MESOS_DOCKER_NETWORK = "mesos-docker-network";
+    private static final String MESOS_PRINCIPAL = "mesos-principal";
+    private static final String MESOS_SECRET = "mesos-secret";
+    private static final String MESOS_DOCKER_NETWORK_NAME = "mesos-docker-network-name";
+    private static final String MESOS_DOCKER_NETWORK_TYPE = "mesos-docker-network-type";
+    private static final String MESOS_DOCKER_MOUNT_VOLUME = "mesos-docker-mount-volume";
+    private static final String MESOS_DOCKER_VOLUME_HOST_PATH = "mesos-docker-volume-host-path";
+    private static final String MESOS_DOCKER_VOLUME_CONTAINER_PATH = "mesos-docker-volume-container-path";
+    private static final String MESOS_DOCKER_COMMAND = "mesos-docker-command";
 
+    private static final String MESOS_WORKER_NAME = "mesos-woker-name";
     private static final String MESOS_FRAMEWORK_HOSTNAME = "mesos-framework-hostname";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT = "mesos-framework-register-timeout";
     private static final String MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS = "mesos-framework-register-timeout-units";
@@ -47,6 +56,9 @@ public class MesosFramework {
     private static final String MESOS_WORKER_WAIT_TIMEOUT_UNITS = "mesos-worker-wait-timeout-units";
     private static final String MESOS_WORKER_KILL_TIMEOUT = "mesos-worker-kill-timeout";
     private static final String MESOS_WORKER_KILL_TIMEOUT_UNITS = "mesos-worker-kill-timeout-units";
+
+    private static final String MESOS_DEFAULT_WORKER_NAME = "Worker";
+    private static final String MESOS_DEFAULT_DOCKER_COMMAND = "/usr/sbin/sshd -D";
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MF);
 
@@ -57,6 +69,10 @@ public class MesosFramework {
 
     private final MesosFrameworkScheduler scheduler;
     private final MesosSchedulerDriver driver;
+
+    private String frameworkName = DEFAULT_FRAMEWORK_NAME;
+    private String workerName = MESOS_DEFAULT_WORKER_NAME;
+    private String dockerCommand = MESOS_DEFAULT_DOCKER_COMMAND;
 
 
     /**
@@ -74,7 +90,7 @@ public class MesosFramework {
 
         // Have mesos fill in the current user
         FrameworkInfo.Builder frameworkBuilder = FrameworkInfo.newBuilder().setFailoverTimeout(FAILOVER_TIMEOUT).setUser("")
-                .setName(FRAMEWORK_NAME);
+                .setName(DEFAULT_FRAMEWORK_NAME);
 
         long registerTimeout = Long.parseLong(getProperty(props, MESOS_FRAMEWORK_REGISTER_TIMEOUT, DEFAULT_TIMEOUT));
         TimeUnit registerTimeoutUnits = TimeUnit.valueOf(getProperty(props, MESOS_FRAMEWORK_REGISTER_TIMEOUT_UNITS, DEFAULT_TIMEOUT_UNITS));
@@ -91,27 +107,60 @@ public class MesosFramework {
         }
         if (props.containsKey(MESOS_FRAMEWORK_HOSTNAME)) {
             LOGGER.info("Setting hostname for the framework: " + props.get(MESOS_FRAMEWORK_HOSTNAME));
-            frameworkBuilder.setHostname(MESOS_FRAMEWORK_HOSTNAME);
+            frameworkBuilder.setHostname(props.get(MESOS_FRAMEWORK_HOSTNAME));
         }
-        if (props.containsKey(MESOS_DOCKER_NETWORK)) {
-            LOGGER.info("Using custom network for Docker: " + props.get(MESOS_DOCKER_NETWORK));
-            scheduler.useDockerNetwork(props.get(MESOS_DOCKER_NETWORK));
+        if (props.containsKey(MESOS_FRAMEWORK_NAME)) {
+            LOGGER.info("Setting name for the framework: " + props.get(MESOS_FRAMEWORK_NAME));
+            frameworkBuilder.setName(props.get(MESOS_FRAMEWORK_NAME));
+        }
+        if (props.containsKey(MESOS_WORKER_NAME)) {
+            LOGGER.info("Setting name for the framework: " + props.get(MESOS_WORKER_NAME));
+            workerName = props.get(MESOS_WORKER_NAME);
+        }
+        if (props.containsKey(MESOS_DOCKER_COMMAND)) {
+            LOGGER.info("Setting docker command to use for the worker: " + props.get(MESOS_DOCKER_COMMAND));
+            dockerCommand = props.get(MESOS_DOCKER_COMMAND);
+        }
+        if (props.containsKey(MESOS_DOCKER_NETWORK_NAME)) {
+            LOGGER.info("Using custom network for Docker: " + props.get(MESOS_DOCKER_NETWORK_NAME));
+            scheduler.useDockerNetworkName(props.get(MESOS_DOCKER_NETWORK_NAME));
+        }
+        if (props.containsKey(MESOS_DOCKER_NETWORK_TYPE)) {
+            LOGGER.info("Using Docker network type: " + props.get(MESOS_DOCKER_NETWORK_TYPE));
+            scheduler.useDockerNetworkType(props.get(MESOS_DOCKER_NETWORK_TYPE));
+        }
+        if (props.containsKey(MESOS_CONTAINERIZER)) {
+            LOGGER.info("Using containerizer: " + props.get(MESOS_CONTAINERIZER));
+            scheduler.useContainerizer(props.get(MESOS_CONTAINERIZER));
+        }
+        if (props.containsKey(MESOS_DOCKER_MOUNT_VOLUME) &&
+                TRUE.equals(props.get(MESOS_DOCKER_MOUNT_VOLUME))) {
+            if (props.containsKey(MESOS_DOCKER_VOLUME_HOST_PATH) &&
+                    props.containsKey(MESOS_DOCKER_VOLUME_CONTAINER_PATH)) {
+                LOGGER.info("Will mount volume in Docker containers: " + props.get(MESOS_DOCKER_VOLUME_HOST_PATH) + ":" + props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
+                scheduler.useDockerVolume(props.get(MESOS_DOCKER_VOLUME_HOST_PATH),
+                                          props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
+            } else {
+                LOGGER.warn("Docker mount volume set to TRUE but no " +
+                            MESOS_DOCKER_VOLUME_HOST_PATH + " and " +
+                            MESOS_DOCKER_VOLUME_CONTAINER_PATH + " specified");
+            }
         }
         if (props.containsKey(MESOS_AUTHENTICATE) && TRUE.equals(props.get(MESOS_AUTHENTICATE))) {
             LOGGER.info("Enabling authentication for the framework");
 
-            if (!props.containsKey(MESOS_DEFAULT_PRINCIPAL)) {
+            if (!props.containsKey(MESOS_PRINCIPAL)) {
                 LOGGER.error("Expecting authentication principal in the environment");
                 throw new FrameworkException("Missing principal in mesos authentication");
             }
-            if (!props.containsKey(MESOS_DEFAULT_SECRET)) {
+            if (!props.containsKey(MESOS_SECRET)) {
                 LOGGER.error("Expecting authentication secret in the environment");
                 throw new FrameworkException("Missing secret in mesos authentication");
             }
-            Credential credential = Credential.newBuilder().setPrincipal(props.get(MESOS_DEFAULT_PRINCIPAL))
-                    .setSecret(props.get(MESOS_DEFAULT_SECRET)).build();
+            Credential credential = Credential.newBuilder().setPrincipal(props.get(MESOS_PRINCIPAL))
+                    .setSecret(props.get(MESOS_SECRET)).build();
 
-            frameworkBuilder.setPrincipal(props.get(MESOS_DEFAULT_PRINCIPAL));
+            frameworkBuilder.setPrincipal(props.get(MESOS_PRINCIPAL));
             driver = new MesosSchedulerDriver(scheduler, frameworkBuilder.build(), mesosMasterIp, credential);
         } else {
             frameworkBuilder.setPrincipal(COMPSS_PRINCIPAL);
@@ -145,8 +194,9 @@ public class MesosFramework {
      * @return Identifier assigned to new worker
      */
     public String requestWorker(String appName, String imageName, List<Resource> resources) {
+        String name = appName + workerName;
         LOGGER.info("Requested a worker");
-        return scheduler.requestWorker(driver, appName, imageName, resources);
+        return scheduler.requestWorker(driver, name, imageName, dockerCommand, resources);
     }
 
     /**

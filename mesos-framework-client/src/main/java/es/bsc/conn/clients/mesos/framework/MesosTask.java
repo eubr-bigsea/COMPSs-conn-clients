@@ -20,7 +20,7 @@ import java.util.EnumMap;
 public class MesosTask {
 
     private static final Logger LOGGER = LogManager.getLogger(Loggers.MESOS_TASK);
-    
+
     // Properties
     private List<Resource> requirements;
     private TaskState state;
@@ -28,6 +28,7 @@ public class MesosTask {
     private String ip;
     private String id;
     private String imageName;
+    private String dockerCommand;
 
     // Times tried to launch task and failed
     private int retries;
@@ -41,9 +42,11 @@ public class MesosTask {
      * @param state        State of the task, TASK_STAGING by default.
      * @param requirements List of resources required for the task.
      */
-    public MesosTask(String id, String imageName, TaskState state, List<Resource> requirements) {
+    public MesosTask(String id, String imageName, String dockerCommand,
+            TaskState state, List<Resource> requirements) {
         this.id = id;
         this.imageName = imageName;
+        this.dockerCommand = dockerCommand;
         this.state = state;
         this.requirements = requirements;
         this.waitSems = new EnumMap<>(TaskState.class);
@@ -62,6 +65,13 @@ public class MesosTask {
      */
     public String getImageName() {
         return imageName;
+    }
+
+    /**
+     * @return Docker command to run.
+     */
+    public String getDockerCommand() {
+        return dockerCommand;
     }
 
     /**

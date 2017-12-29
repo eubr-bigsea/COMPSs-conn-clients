@@ -40,9 +40,15 @@ public class MesosFrameworkTest {
     @Test
     public void testFramework() throws Exception {
         HashMap<String, String> properties = new HashMap<String, String>();
-        // properties.put("Server", "localhost:5050");
-        properties.put("Server", "zk://192.168.99.100:2181/mesos");
-        properties.put("mesos-docker-network", "compss-net");
+        properties.put("Server", "localhost:5050");
+        // properties.put("Server", "zk://192.168.99.100:2181/mesos");
+        // properties.put("mesos-docker-network", "compss-net");
+        properties.put("mesos-framework-name", "PMES");
+        properties.put("mesos-woker-name", "COMPSs-Instance");
+
+        properties.put("mesos-docker-mount-volume", "true");
+        properties.put("mesos-docker-volume-host-path", "/home/alberts/Downloads");
+        properties.put("mesos-docker-volume-container-path", "/root/Downloads");
 
         String dockerImage = "compss/compss:2.0";
         String appName = "test.Test";
@@ -79,7 +85,7 @@ public class MesosFrameworkTest {
         logger.debug("Worker1 IP: " + ip);
         logger.debug("Worker2 IP: " + ip2);
 
-        Thread.sleep(10_000);
+        Thread.sleep(100_000);
         // Remove workers
         mf.removeWorker(idWorker);
 
