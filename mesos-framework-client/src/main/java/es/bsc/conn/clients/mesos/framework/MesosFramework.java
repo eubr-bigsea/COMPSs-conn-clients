@@ -14,6 +14,7 @@ import org.apache.mesos.Protos.FrameworkInfo;
 import org.apache.mesos.Protos.Resource;
 import org.apache.mesos.Protos.TaskState;
 
+
 /**
  * Representation of a Mesos Framework client
  *
@@ -70,7 +71,6 @@ public class MesosFramework {
     private final MesosFrameworkScheduler scheduler;
     private final MesosSchedulerDriver driver;
 
-    private String frameworkName = DEFAULT_FRAMEWORK_NAME;
     private String workerName = MESOS_DEFAULT_WORKER_NAME;
     private String dockerCommand = MESOS_DEFAULT_DOCKER_COMMAND;
 
@@ -82,7 +82,6 @@ public class MesosFramework {
      * @throws FrameworkException
      */
     public MesosFramework(Map<String, String> props) throws FrameworkException {
-
         if (!props.containsKey(SERVER_IP)) {
             throw new FrameworkException("Missing Mesos master IP");
         }
@@ -133,17 +132,14 @@ public class MesosFramework {
             LOGGER.info("Using containerizer: " + props.get(MESOS_CONTAINERIZER));
             scheduler.useContainerizer(props.get(MESOS_CONTAINERIZER));
         }
-        if (props.containsKey(MESOS_DOCKER_MOUNT_VOLUME) &&
-                TRUE.equals(props.get(MESOS_DOCKER_MOUNT_VOLUME))) {
-            if (props.containsKey(MESOS_DOCKER_VOLUME_HOST_PATH) &&
-                    props.containsKey(MESOS_DOCKER_VOLUME_CONTAINER_PATH)) {
-                LOGGER.info("Will mount volume in Docker containers: " + props.get(MESOS_DOCKER_VOLUME_HOST_PATH) + ":" + props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
-                scheduler.useDockerVolume(props.get(MESOS_DOCKER_VOLUME_HOST_PATH),
-                                          props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
+        if (props.containsKey(MESOS_DOCKER_MOUNT_VOLUME) && TRUE.equals(props.get(MESOS_DOCKER_MOUNT_VOLUME))) {
+            if (props.containsKey(MESOS_DOCKER_VOLUME_HOST_PATH) && props.containsKey(MESOS_DOCKER_VOLUME_CONTAINER_PATH)) {
+                LOGGER.info("Will mount volume in Docker containers: " + props.get(MESOS_DOCKER_VOLUME_HOST_PATH) + ":"
+                        + props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
+                scheduler.useDockerVolume(props.get(MESOS_DOCKER_VOLUME_HOST_PATH), props.get(MESOS_DOCKER_VOLUME_CONTAINER_PATH));
             } else {
-                LOGGER.warn("Docker mount volume set to TRUE but no " +
-                            MESOS_DOCKER_VOLUME_HOST_PATH + " and " +
-                            MESOS_DOCKER_VOLUME_CONTAINER_PATH + " specified");
+                LOGGER.warn("Docker mount volume set to TRUE but no " + MESOS_DOCKER_VOLUME_HOST_PATH + " and "
+                        + MESOS_DOCKER_VOLUME_CONTAINER_PATH + " specified");
             }
         }
         if (props.containsKey(MESOS_AUTHENTICATE) && TRUE.equals(props.get(MESOS_AUTHENTICATE))) {
@@ -157,8 +153,8 @@ public class MesosFramework {
                 LOGGER.error("Expecting authentication secret in the environment");
                 throw new FrameworkException("Missing secret in mesos authentication");
             }
-            Credential credential = Credential.newBuilder().setPrincipal(props.get(MESOS_PRINCIPAL))
-                    .setSecret(props.get(MESOS_SECRET)).build();
+            Credential credential = Credential.newBuilder().setPrincipal(props.get(MESOS_PRINCIPAL)).setSecret(props.get(MESOS_SECRET))
+                    .build();
 
             frameworkBuilder.setPrincipal(props.get(MESOS_PRINCIPAL));
             driver = new MesosSchedulerDriver(scheduler, frameworkBuilder.build(), mesosMasterIp, credential);
@@ -202,7 +198,8 @@ public class MesosFramework {
     /**
      * Wait for worker with identifier id.
      *
-     * @param  id Worker identifier.
+     * @param id
+     *            Worker identifier.
      * @return Worker IP address.
      */
     public String waitWorkerUntilRunning(String id) {
