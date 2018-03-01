@@ -52,9 +52,9 @@
 
 	<!-- SOURCE CONTROL MANAGEMENT -->
 	<scm>
-		<connection>scm:svn:http://compss.bsc.es/svn/projects/conn-clients/</connection>
-		<developerConnection>scm:svn:http://compss.bsc.es/svn/projects/conn-clients/</developerConnection>
-		<url>http://compss.bsc.es/svn/projects/conn-clients/</url>
+		<connection>scm:git:http://compss.bsc.es/gitlab/project/conn-clients.git/</connection>
+		<developerConnection>scm:git:http://compss.bsc.es/gitlab/project/conn-clients.git/</developerConnection>
+		<url>http://compss.bsc.es/gitlab/project/conn-clients.git/</url>
 	</scm>
 
 	<!-- REPOSITORIES -->
@@ -69,8 +69,8 @@
 		</repository>
 		<repository>
 			<id>compss-repo</id>
-			<name>BSC Grid computing and Clusters group</name>
-			<url>http://compss.bsc.es/artifactory/libs-release</url>
+			<name>BSC Workflows and Distributed Computing and Clusters group</name>
+			<url>http://compssdev.bsc.es/artifactory/libs-release</url>
 		</repository>
 	</repositories>
 
@@ -92,7 +92,7 @@
 	<distributionManagement>
 		<repository>
 			<id>compss-repo</id>
-			<name>BSC Grid computing and Clusters group</name>
+			<name>BSC Workflows and Distributed Computing and Clusters group</name>
 			<url>http://compss.bsc.es/artifactory/libs-release</url>
 		</repository>
 	</distributionManagement>
@@ -102,7 +102,7 @@
 		<dependencies>
 			<!-- Conn Client commons -->
 			<dependency>
-				<groupId>es.bsc</groupId>
+				<groupId>es.bsc.conn-clients</groupId>
 				<artifactId>commons-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>

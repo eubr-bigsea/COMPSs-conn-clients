@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- GENERAL INFORMATION -->
+	<groupId>es.bsc.conn-clients</groupId>
 	<artifactId>mesos-framework-client</artifactId>
 	<packaging>jar</packaging>
 	<parent>
@@ -37,7 +38,7 @@
 	<dependencies>
 		<!-- Conn Client commons -->
         <dependency>
-            <groupId>es.bsc</groupId>
+            <groupId>es.bsc.conn-clients</groupId>
             <artifactId>commons-client</artifactId>
         </dependency>
 

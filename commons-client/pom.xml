@@ -3,6 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- GENERAL INFORMATION -->
+    <groupId>es.bsc.conn-clients</groupId>
     <artifactId>commons-client</artifactId>
     <packaging>jar</packaging>
     <parent>

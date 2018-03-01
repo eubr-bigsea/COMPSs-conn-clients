@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- GENERAL INFORMATION -->
+	<groupId>es.bsc.conn-clients</groupId>
 	<artifactId>vmm-client</artifactId>
 	<packaging>jar</packaging>
 	<parent>
@@ -50,7 +51,7 @@
 
 		<!-- Conn Client commons -->
 		<dependency>
-			<groupId>es.bsc</groupId>
+			<groupId>es.bsc.conn-clients</groupId>
 			<artifactId>commons-client</artifactId>
 		</dependency>
 
@@ -65,7 +66,7 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-                        <scope>provided</scope> 
+                        <scope>provided</scope>
 		</dependency>
 	</dependencies>
 
